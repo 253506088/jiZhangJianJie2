@@ -1,10 +1,24 @@
 /** The versioned, portable ledger model. No device or UI dependencies belong here. */
-export const SCHEMA_VERSION = 1 as const;
+export const SCHEMA_VERSION = 2 as const;
 export const MAX_AMOUNT_CENTS = 99_999_999_999;
 export const MAX_TRANSACTIONS = 200_000;
 
 export type Direction = 'expense' | 'income';
-export type TransactionDirection = Direction | 'transfer';
+export type TransactionDirection = Direction | 'transfer' | 'loan';
+export type LoanType = 'borrow' | 'lend' | 'repay' | 'collect';
+export type HomeLayout = 'overview' | 'classic';
+export const ACCENT_COLORS = [
+  'blue',
+  'pink',
+  'yellow',
+  'red',
+  'brown',
+  'green',
+  'gray',
+  'teal',
+  'coral',
+] as const;
+export type AccentColor = (typeof ACCENT_COLORS)[number];
 export type Theme = 'light' | 'dark' | 'system';
 export type AccountKind = 'cash' | 'bank' | 'wallet' | 'other';
 
@@ -30,6 +44,38 @@ export interface Account {
   sortOrder: number;
   archived: boolean;
   createdAt: string;
+}
+
+export interface Member {
+  id: string;
+  bookId: string;
+  name: string;
+  /** Roles are stable even if a user explicitly changes the display name. */
+  kind: 'self' | 'unspecified' | 'custom';
+  sortOrder: number;
+  archived: boolean;
+  createdAt: string;
+}
+
+export interface MemberAlias {
+  bookId: string;
+  name: string;
+  memberId: string;
+}
+
+export interface LoanPerson {
+  id: string;
+  bookId: string;
+  name: string;
+  sortOrder: number;
+  archived: boolean;
+  createdAt: string;
+}
+
+export interface LoanPersonAlias {
+  bookId: string;
+  name: string;
+  personId: string;
 }
 
 export interface Category {
@@ -74,6 +120,12 @@ export interface Transaction {
   categoryId: string | null;
   /** Destination account for a transfer; null otherwise. */
   toAccountId: string | null;
+  /** Loans have a counterparty, not a member field in the original export. */
+  memberId: string | null;
+  loanType: LoanType | null;
+  personId: string | null;
+  /** Retain the original transfer-label cell; it does not change the balance calculation. */
+  transferType?: string;
   note: string;
   createdAt: string;
   updatedAt: string;
@@ -112,6 +164,7 @@ export interface TransactionTemplate {
   direction: Direction;
   categoryId: string;
   accountId: string;
+  memberId: string;
   amountCents: number | null;
   note: string;
 }
@@ -120,6 +173,10 @@ export interface LedgerState {
   schemaVersion: typeof SCHEMA_VERSION;
   books: Book[];
   accounts: Account[];
+  members: Member[];
+  memberAliases: MemberAlias[];
+  loanPeople: LoanPerson[];
+  loanPersonAliases: LoanPersonAlias[];
   categories: Category[];
   categoryAliases: CategoryAlias[];
   transactions: Transaction[];
@@ -129,6 +186,8 @@ export interface LedgerState {
   settings: {
     selectedBookId: string;
     theme: Theme;
+    homeLayout: HomeLayout;
+    accentColor: AccentColor;
   };
 }
 
@@ -210,13 +269,32 @@ export function createEmptyState(context: CommandContext = {}): LedgerState {
         createdAt,
       },
     ],
+    members: [
+      {
+        id: makeId(context),
+        bookId,
+        name: '自己',
+        kind: 'self',
+        sortOrder: 0,
+        archived: false,
+        createdAt,
+      },
+    ],
+    memberAliases: [],
+    loanPeople: [],
+    loanPersonAliases: [],
     categories: [],
     categoryAliases: [],
     transactions: [],
     imports: [],
     budgets: [],
     templates: [],
-    settings: { selectedBookId: bookId, theme: 'light' },
+    settings: {
+      selectedBookId: bookId,
+      theme: 'light',
+      homeLayout: 'overview',
+      accentColor: 'blue',
+    },
   };
 }
 
@@ -302,6 +380,10 @@ export function validateState(value: unknown): asserts value is LedgerState {
   requireValue(value.schemaVersion === SCHEMA_VERSION, '账本版本不受支持，请使用匹配版本的应用');
   list(value.books, '账本列表', 1000);
   list(value.accounts, '账户列表', 20_000);
+  list(value.members, '成员列表', 20_000);
+  list(value.memberAliases, '成员历史名称', 50_000);
+  list(value.loanPeople, '借贷联系人', 20_000);
+  list(value.loanPersonAliases, '借贷联系人历史名称', 50_000);
   list(value.categories, '分类列表', 50_000);
   list(value.categoryAliases, '分类历史', 100_000);
   list(value.transactions, '流水列表', MAX_TRANSACTIONS);
@@ -335,6 +417,14 @@ export function validateState(value: unknown): asserts value is LedgerState {
     ['light', 'dark', 'system'].includes(value.settings.theme as string),
     '主题设置不正确',
   );
+  requireValue(
+    ['overview', 'classic'].includes(value.settings.homeLayout as string),
+    '首页布局设置不正确',
+  );
+  requireValue(
+    ACCENT_COLORS.includes(value.settings.accentColor as AccentColor),
+    '主题配色设置不正确',
+  );
 
   const accountNames = new Set<string>();
   for (const account of value.accounts) {
@@ -356,6 +446,80 @@ export function validateState(value: unknown): asserts value is LedgerState {
     accountNames.add(key);
   }
   const accounts = distinctIds(state.accounts, '账户');
+
+  const memberNames = new Map<string, string>();
+  const memberRoles = new Set<string>();
+  for (const member of value.members) {
+    record(member, '成员');
+    identifier(member.id, '成员标识');
+    identifier(member.bookId, '成员所属账本');
+    requireValue(books.has(member.bookId), '成员所属账本不存在');
+    name(member.name, '成员名称');
+    requireValue(
+      ['self', 'unspecified', 'custom'].includes(member.kind as string),
+      '成员角色不正确',
+    );
+    requireValue(typeof member.archived === 'boolean', '成员归档状态不正确');
+    requireValue(member.kind !== 'self' || member.archived === false, '自己成员不能归档');
+    timestamp(member.createdAt, '成员创建时间');
+    order(member.sortOrder);
+    const key = JSON.stringify([member.bookId, member.name]);
+    requireValue(!memberNames.has(key), '同一账本下成员名称重复');
+    memberNames.set(key, member.id);
+    if (member.kind !== 'custom') {
+      const role = JSON.stringify([member.bookId, member.kind]);
+      requireValue(!memberRoles.has(role), '同一账本下的特殊成员角色重复');
+      memberRoles.add(role);
+    }
+  }
+  const members = distinctIds(state.members, '成员');
+  for (const book of state.books)
+    requireValue(memberRoles.has(JSON.stringify([book.id, 'self'])), '每本账需要一个自己成员');
+  const memberAliasKeys = new Set<string>();
+  for (const alias of value.memberAliases) {
+    record(alias, '成员历史名称');
+    identifier(alias.bookId, '成员历史所属账本');
+    name(alias.name, '成员历史名称');
+    identifier(alias.memberId, '成员历史目标');
+    requireValue(members.get(alias.memberId)?.bookId === alias.bookId, '成员历史目标不属于该账本');
+    const key = JSON.stringify([alias.bookId, alias.name]);
+    requireValue(!memberAliasKeys.has(key), '成员历史名称重复');
+    memberAliasKeys.add(key);
+    requireValue(
+      !memberNames.has(key) || memberNames.get(key) === alias.memberId,
+      '成员历史名称与当前成员冲突',
+    );
+  }
+  const personNames = new Map<string, string>();
+  for (const person of value.loanPeople) {
+    record(person, '借贷联系人');
+    identifier(person.id, '联系人标识');
+    identifier(person.bookId, '联系人所属账本');
+    requireValue(books.has(person.bookId), '联系人所属账本不存在');
+    name(person.name, '联系人名称');
+    order(person.sortOrder);
+    timestamp(person.createdAt, '联系人创建时间');
+    requireValue(typeof person.archived === 'boolean', '联系人归档状态不正确');
+    const key = JSON.stringify([person.bookId, person.name]);
+    requireValue(!personNames.has(key), '同一账本下联系人名称重复');
+    personNames.set(key, person.id);
+  }
+  const people = distinctIds(state.loanPeople, '借贷联系人');
+  const personAliasKeys = new Set<string>();
+  for (const alias of value.loanPersonAliases) {
+    record(alias, '联系人历史名称');
+    identifier(alias.bookId, '联系人历史所属账本');
+    name(alias.name, '联系人历史名称');
+    identifier(alias.personId, '联系人历史目标');
+    requireValue(people.get(alias.personId)?.bookId === alias.bookId, '联系人历史目标不属于该账本');
+    const key = JSON.stringify([alias.bookId, alias.name]);
+    requireValue(!personAliasKeys.has(key), '联系人历史名称重复');
+    personAliasKeys.add(key);
+    requireValue(
+      !personNames.has(key) || personNames.get(key) === alias.personId,
+      '联系人历史名称与当前联系人冲突',
+    );
+  }
 
   const categoryKeys = new Set<string>();
   for (const category of value.categories) {
@@ -511,7 +675,7 @@ export function validateState(value: unknown): asserts value is LedgerState {
     const account = accounts.get(transaction.accountId);
     requireValue(account && account.bookId === transaction.bookId, '流水账户不属于该账本');
     requireValue(
-      ['expense', 'income', 'transfer'].includes(transaction.direction as string),
+      ['expense', 'income', 'transfer', 'loan'].includes(transaction.direction as string),
       '流水类型不正确',
     );
     moneyValue(transaction.amountCents, '流水金额');
@@ -521,6 +685,36 @@ export function validateState(value: unknown): asserts value is LedgerState {
     string(transaction.note, '流水备注', 20_000, true);
     timestamp(transaction.createdAt, '流水创建时间');
     timestamp(transaction.updatedAt, '流水修改时间');
+    if (transaction.direction === 'loan') {
+      requireValue(
+        transaction.categoryId === null && transaction.toAccountId === null,
+        '借贷不使用收支分类或转入账户',
+      );
+      requireValue(transaction.memberId === null, '借贷只关联联系人，不推测成员');
+      requireValue(
+        ['borrow', 'lend', 'repay', 'collect'].includes(transaction.loanType as string),
+        '借贷类型不正确',
+      );
+      identifier(transaction.personId, '借贷联系人');
+      requireValue(
+        people.get(transaction.personId)?.bookId === transaction.bookId,
+        '借贷联系人不属于该账本',
+      );
+    } else {
+      identifier(transaction.memberId, '流水成员');
+      requireValue(
+        members.get(transaction.memberId)?.bookId === transaction.bookId,
+        '流水成员不属于该账本',
+      );
+      requireValue(
+        transaction.loanType === null && transaction.personId === null,
+        '非借贷流水不能包含借贷类型或联系人',
+      );
+    }
+    if (transaction.transferType !== undefined) {
+      requireValue(transaction.direction === 'transfer', '只有转账流水能包含转账类型原文');
+      string(transaction.transferType, '转账类型原文', 120, true);
+    }
     if (transaction.direction === 'transfer') {
       requireValue(transaction.categoryId === null, '转账不能关联收支分类');
       identifier(transaction.toAccountId, '转入账户');
@@ -529,7 +723,7 @@ export function validateState(value: unknown): asserts value is LedgerState {
         destination && destination.bookId === transaction.bookId && destination.id !== account.id,
         '转入账户必须是同账本的另一个账户',
       );
-    } else {
+    } else if (transaction.direction !== 'loan') {
       requireValue(transaction.toAccountId === null, '普通收支不能包含转入账户');
       identifier(transaction.categoryId, '流水分类');
       const category = categories.get(transaction.categoryId);
@@ -624,6 +818,11 @@ export function validateState(value: unknown): asserts value is LedgerState {
     identifier(template.bookId, '模板所属账本');
     name(template.name, '模板名称');
     identifier(template.accountId, '模板账户');
+    identifier(template.memberId, '模板成员');
+    requireValue(
+      members.get(template.memberId)?.bookId === template.bookId,
+      '模板成员不属于该账本',
+    );
     identifier(template.categoryId, '模板分类');
     requireValue(
       template.direction === 'expense' || template.direction === 'income',

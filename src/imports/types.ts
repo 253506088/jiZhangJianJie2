@@ -1,4 +1,4 @@
-import type { TransactionDirection } from '../core/model';
+import type { LoanType, TransactionDirection } from '../core/model';
 
 export type CellValue = string | number | boolean | null;
 export interface WorkbookSheet {
@@ -27,6 +27,10 @@ export const columnLabels = {
   toAccount: '转入账户',
   book: '账本',
   note: '备注',
+  member: '成员',
+  loanType: '借贷类型',
+  person: '借贷人',
+  transferType: '转账类型',
 } as const;
 export type ColumnField = keyof typeof columnLabels;
 export type ColumnMap = Record<ColumnField, number | null>;
@@ -45,6 +49,10 @@ export interface SheetMapping {
   expenseLabels: string;
   incomeLabels: string;
   transferLabels: string;
+  loanLabels: string;
+  defaultMember: string;
+  defaultPerson: string;
+  legacyFormat: boolean;
 }
 
 export interface ImportRow {
@@ -61,6 +69,10 @@ export interface ImportRow {
   toAccount: string | null;
   book: string | null;
   note: string;
+  member: string | null;
+  person: string | null;
+  loanType: LoanType | null;
+  transferType?: string;
   warnings: string[];
 }
 export interface RowIssue {
@@ -76,7 +88,7 @@ export interface ImportPlan {
   skipped: RowIssue[];
   blankRows: number;
   enabledSheets: number;
-  totals: { income: number; expense: number; transfer: number };
+  totals: Record<TransactionDirection, number>;
 }
 export interface ImportOptions {
   targetBookId: string;

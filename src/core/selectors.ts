@@ -4,6 +4,9 @@ import {
   type Direction,
   type LedgerState,
   type Transaction,
+  type LoanType,
+  type LoanPerson,
+  type Member,
   LedgerError,
 } from './model';
 import { addCents } from './money';
@@ -16,6 +19,9 @@ export interface TransactionFilter {
   accountId?: string;
   categoryId?: string;
   direction?: Transaction['direction'];
+  memberId?: string;
+  personId?: string;
+  loanType?: LoanType;
   search?: string;
 }
 
@@ -59,6 +65,18 @@ export function activeAccounts(state: LedgerState, bookId: string): Account[] {
     .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name, 'zh-CN'));
 }
 
+export function activeMembers(state: LedgerState, bookId: string): Member[] {
+  return state.members
+    .filter((item) => item.bookId === bookId && !item.archived)
+    .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name, 'zh-CN'));
+}
+
+export function activeLoanPeople(state: LedgerState, bookId: string): LoanPerson[] {
+  return state.loanPeople
+    .filter((item) => item.bookId === bookId && !item.archived)
+    .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name, 'zh-CN'));
+}
+
 export function filterTransactions(
   state: LedgerState,
   filter: TransactionFilter = {},
@@ -86,6 +104,8 @@ export function filterTransactions(
   const accountNames = needle
     ? new Map(state.accounts.map((account) => [account.id, account.name]))
     : null;
+  const memberNames = needle ? new Map(state.members.map((item) => [item.id, item.name])) : null;
+  const personNames = needle ? new Map(state.loanPeople.map((item) => [item.id, item.name])) : null;
   return state.transactions
     .filter((transaction) => {
       if (filter.bookId && transaction.bookId !== filter.bookId) return false;
@@ -99,6 +119,9 @@ export function filterTransactions(
       )
         return false;
       if (filter.direction && transaction.direction !== filter.direction) return false;
+      if (filter.memberId && transaction.memberId !== filter.memberId) return false;
+      if (filter.personId && transaction.personId !== filter.personId) return false;
+      if (filter.loanType && transaction.loanType !== filter.loanType) return false;
       if (categoryIds && (!transaction.categoryId || !categoryIds.has(transaction.categoryId)))
         return false;
       if (
@@ -108,6 +131,8 @@ export function filterTransactions(
           categoryNames!.get(transaction.categoryId ?? '') ?? '',
           accountNames!.get(transaction.accountId) ?? '',
           accountNames!.get(transaction.toAccountId ?? '') ?? '',
+          memberNames!.get(transaction.memberId ?? '') ?? '',
+          personNames!.get(transaction.personId ?? '') ?? '',
         ]
           .join('\n')
           .toLocaleLowerCase()
@@ -131,6 +156,9 @@ export function transactionTotals(transactions: Transaction[]) {
   let incomeCount = 0;
   let expenseCount = 0;
   let transferCount = 0;
+  let loanCount = 0;
+  let loanInCents = 0;
+  let loanOutCents = 0;
   for (const transaction of transactions) {
     if (transaction.direction === 'income') {
       incomeCents = addCents(incomeCents, transaction.amountCents);
@@ -138,9 +166,14 @@ export function transactionTotals(transactions: Transaction[]) {
     } else if (transaction.direction === 'expense') {
       expenseCents = addCents(expenseCents, transaction.amountCents);
       expenseCount++;
-    } else {
+    } else if (transaction.direction === 'transfer') {
       transferCents = addCents(transferCents, transaction.amountCents);
       transferCount++;
+    } else {
+      const delta = accountDelta(transaction);
+      if (delta > 0) loanInCents = addCents(loanInCents, delta);
+      else loanOutCents = addCents(loanOutCents, -delta);
+      loanCount++;
     }
   }
   return {
@@ -150,8 +183,23 @@ export function transactionTotals(transactions: Transaction[]) {
     incomeCount,
     expenseCount,
     transferCount,
+    loanCount,
+    loanInCents,
+    loanOutCents,
     balanceCents: addCents(incomeCents, -expenseCents),
   };
+}
+
+/** Cash movement; loan flows remain distinct from ordinary income and expense. */
+function accountDelta(transaction: Transaction): number {
+  if (transaction.direction === 'income') return transaction.amountCents;
+  if (transaction.direction === 'expense' || transaction.direction === 'transfer')
+    return -transaction.amountCents;
+  if (transaction.loanType === 'borrow' || transaction.loanType === 'collect')
+    return transaction.amountCents;
+  if (transaction.loanType === 'lend' || transaction.loanType === 'repay')
+    return -transaction.amountCents;
+  throw new LedgerError('借贷流水类型无效', 'INVALID_STATE');
 }
 
 export function accountBalance(
@@ -164,11 +212,7 @@ export function accountBalance(
   let balance = account.openingBalanceCents;
   for (const transaction of state.transactions) {
     if (throughDate && transaction.date > throughDate) continue;
-    if (transaction.accountId === accountId)
-      balance = addCents(
-        balance,
-        transaction.amountCents * (transaction.direction === 'income' ? 1 : -1),
-      );
+    if (transaction.accountId === accountId) balance = addCents(balance, accountDelta(transaction));
     if (transaction.direction === 'transfer' && transaction.toAccountId === accountId)
       balance = addCents(balance, transaction.amountCents);
   }
@@ -225,12 +269,111 @@ export function bookBalance(state: LedgerState, bookId: string, throughDate?: st
       (throughDate && transaction.date > throughDate)
     )
       continue;
-    balance = addCents(
-      balance,
-      transaction.amountCents * (transaction.direction === 'income' ? 1 : -1),
-    );
+    balance = addCents(balance, accountDelta(transaction));
   }
   return balance;
+}
+
+export interface LoanTotals {
+  borrowedCents: number;
+  lentCents: number;
+  repaidCents: number;
+  collectedCents: number;
+  receivableCents: number;
+  payableCents: number;
+  netCents: number;
+  cashInCents: number;
+  cashOutCents: number;
+  count: number;
+}
+
+export interface LoanPersonTotal extends LoanTotals {
+  personId: string;
+  bookId: string;
+  name: string;
+  archived: boolean;
+  person: LoanPerson;
+}
+
+function emptyLoanTotals(): LoanTotals {
+  return {
+    borrowedCents: 0,
+    lentCents: 0,
+    repaidCents: 0,
+    collectedCents: 0,
+    receivableCents: 0,
+    payableCents: 0,
+    netCents: 0,
+    cashInCents: 0,
+    cashOutCents: 0,
+    count: 0,
+  };
+}
+
+function accumulateLoan(total: LoanTotals, transaction: Transaction) {
+  if (transaction.direction !== 'loan') return;
+  if (transaction.loanType === 'borrow')
+    total.borrowedCents = addCents(total.borrowedCents, transaction.amountCents);
+  else if (transaction.loanType === 'lend')
+    total.lentCents = addCents(total.lentCents, transaction.amountCents);
+  else if (transaction.loanType === 'repay')
+    total.repaidCents = addCents(total.repaidCents, transaction.amountCents);
+  else if (transaction.loanType === 'collect')
+    total.collectedCents = addCents(total.collectedCents, transaction.amountCents);
+  else throw new LedgerError('借贷流水类型无效', 'INVALID_STATE');
+  total.count++;
+}
+
+function finishLoans<T extends LoanTotals>(totals: T): T {
+  totals.receivableCents = addCents(totals.lentCents, -totals.collectedCents);
+  totals.payableCents = addCents(totals.borrowedCents, -totals.repaidCents);
+  totals.netCents = addCents(totals.receivableCents, -totals.payableCents);
+  totals.cashInCents = addCents(totals.borrowedCents, totals.collectedCents);
+  totals.cashOutCents = addCents(totals.lentCents, totals.repaidCents);
+  return totals;
+}
+
+/** Signed balances are not clamped: partial-period imports may omit earlier obligations. */
+export function loanTotals(state: LedgerState, filter: TransactionFilter = {}): LoanTotals {
+  const total = emptyLoanTotals();
+  for (const transaction of filterTransactions(state, { ...filter, direction: 'loan' }))
+    accumulateLoan(total, transaction);
+  return finishLoans(total);
+}
+
+export function loanPeopleTotals(
+  state: LedgerState,
+  filter: TransactionFilter = {},
+): LoanPersonTotal[] {
+  const totals = new Map(
+    state.loanPeople
+      .filter(
+        (person) =>
+          (!filter.bookId || person.bookId === filter.bookId) &&
+          (!filter.personId || person.id === filter.personId),
+      )
+      .map((person) => [
+        person.id,
+        {
+          ...emptyLoanTotals(),
+          personId: person.id,
+          bookId: person.bookId,
+          name: person.name,
+          archived: person.archived,
+          person,
+        } as LoanPersonTotal,
+      ]),
+  );
+  for (const transaction of filterTransactions(state, { ...filter, direction: 'loan' })) {
+    const total = totals.get(transaction.personId ?? '');
+    if (!total) throw new LedgerError('借贷联系人不存在', 'INVALID_STATE');
+    accumulateLoan(total, transaction);
+  }
+  return [...totals.values()]
+    .map(finishLoans)
+    .sort(
+      (a, b) => a.person.sortOrder - b.person.sortOrder || a.name.localeCompare(b.name, 'zh-CN'),
+    );
 }
 
 export function budgetProgress(state: LedgerState, budgetId: string) {

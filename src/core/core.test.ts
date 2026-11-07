@@ -15,6 +15,7 @@ import {
   createEmptyState,
   createPrimaryCategory,
   ensureAccountDraft,
+  ensureMemberDraft,
   ensureCategoryPathDraft,
   evaluateMoneyExpression,
   filterTransactions,
@@ -85,7 +86,7 @@ function addExpense(
 }
 
 describe('正式账本与精确金额', () => {
-  it('新账本只有账本和现金账户，不注入演示流水或分类', () => {
+  it('新账本只有基础账本、现金账户和自己成员，不注入演示流水或分类', () => {
     const state = createEmptyState(context());
     expect(state.books).toHaveLength(1);
     expect(state.accounts).toHaveLength(1);
@@ -136,6 +137,7 @@ describe('分类身份与用户换机 BUG 回归', () => {
         ctx,
       ).id;
       const account = ensureAccountDraft(draft, bookId, '旧版现金', ctx, 'cash');
+      const member = ensureMemberDraft(draft, bookId, '未指定', ctx);
       const transactions: Transaction[] = [1, 2].map((row) => ({
         id: `imported-${row}`,
         bookId,
@@ -145,6 +147,9 @@ describe('分类身份与用户换机 BUG 回归', () => {
         accountId: account.id,
         categoryId,
         toAccountId: null,
+        memberId: member.id,
+        loanType: null,
+        personId: null,
         note: '虚构历史早餐',
         createdAt: NOW,
         updatedAt: NOW,
@@ -556,7 +561,7 @@ describe('严格校验与原子草稿', () => {
         draft.transactions[0].amountCents = 0.1;
       },
       (draft) => {
-        (draft as { schemaVersion: number }).schemaVersion = 2;
+        (draft as { schemaVersion: number }).schemaVersion = 3;
       },
       (draft) => {
         draft.categories[1].parentId = draft.categories[1].id;
@@ -584,6 +589,7 @@ describe('严格校验与原子草稿', () => {
   it('删除导入流水后保留批次历史，当前来源行重复仍被拒绝', () => {
     const { state: initial, bookId, accountId, categoryId } = setup();
     const state = withLedgerDraft(initial, (draft) => {
+      const member = ensureMemberDraft(draft, bookId, '未指定');
       const transaction: Transaction = {
         id: 'row-1',
         bookId,
@@ -594,6 +600,9 @@ describe('严格校验与原子草稿', () => {
         date: '2026-11-08',
         time: '09:05',
         toAccountId: null,
+        memberId: member.id,
+        loanType: null,
+        personId: null,
         note: '',
         createdAt: NOW,
         updatedAt: NOW,

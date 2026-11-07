@@ -38,6 +38,8 @@ const aliases: Record<ColumnField, string[]> = {
     'primarycategory',
   ],
   secondary: [
+    '收入类别',
+    '收入分类',
     '二级分类',
     '二级类别',
     '小类',
@@ -50,9 +52,23 @@ const aliases: Record<ColumnField, string[]> = {
     'secondarycategory',
   ],
   path: ['分类', '类别', '分类路径', '完整分类', '完整分类路径', 'category'],
-  account: ['账户', '帐户', '账户名称', '支付账户', '支付方式', 'account'],
+  account: [
+    '账户',
+    '帐户',
+    '账户名称',
+    '支付账户',
+    '支付方式',
+    '原账户',
+    '原帐户',
+    '转出账户',
+    'account',
+  ],
   toAccount: ['转入账户', '转入帐户', '目标账户', '收款账户', 'toaccount'],
   book: ['账本', '帐本', '账本名称', '帐本名称', 'book', 'ledger'],
+  member: ['成员', '成员名称', '家庭成员', 'member'],
+  person: ['借贷人', '债权人', '债务人', '借款人', 'person'],
+  loanType: ['借贷类型', '借还类型', 'loantype'],
+  transferType: ['转账类型', '转帐类型', 'transfertype'],
   note: [
     '备注',
     '说明',
@@ -109,21 +125,39 @@ export function autoMapping(sheet: WorkbookSheet): SheetMapping {
     defaultDirection = 'expense';
   if (/收入|income/i.test(sheet.name) && !/支出|expense/i.test(sheet.name))
     defaultDirection = 'income';
+  if (/^(转账|转帐|transfer)$/i.test(sheet.name.trim())) defaultDirection = 'transfer';
+  if (/^(借贷|loan|loans)$/i.test(sheet.name.trim())) defaultDirection = 'loan';
+  const columns = inferColumns(sheet.rows[headerRow - 1] ?? []);
+  const legacyFormat =
+    headerRow === 3 &&
+    ['支出', '收入', '转账', '借贷'].includes(sheet.name) &&
+    sheet.rows[0]?.[0] === sheet.name &&
+    sheet.rows[1]?.[0] === '时间' &&
+    sheet.rows[2]?.[0] === '金额';
+  const singleIncome =
+    defaultDirection === 'income' &&
+    columns.primary === null &&
+    columns.secondary !== null &&
+    ['收入类别', '收入分类'].includes(String(sheet.rows[headerRow - 1]?.[columns.secondary]));
   return {
     name: sheet.name,
     enabled: sheet.rows.some((row) =>
       row.some((value) => value !== null && String(value).trim() !== ''),
     ),
     headerRow,
-    columns: inferColumns(sheet.rows[headerRow - 1] ?? []),
+    columns,
     defaultDirection,
     dateOrder: 'ymd',
-    defaultAccount: '现金',
-    defaultPrimary: '',
+    defaultAccount: '未指定账户',
+    defaultPrimary: singleIncome ? '收入' : '',
     defaultSecondary: '未细分',
     pathSeparator: '/',
     expenseLabels: '支出,支,消费,付款,出账,expense,expenses,payment',
     incomeLabels: '收入,入,收款,入账,income,receipt',
     transferLabels: '转账,转帐,transfer',
+    loanLabels: '借贷,loan',
+    defaultMember: '未指定',
+    defaultPerson: '未指定',
+    legacyFormat,
   };
 }

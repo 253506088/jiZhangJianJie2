@@ -1,5 +1,5 @@
 import { addCents } from '../core/money';
-import { normalizeName, type TransactionDirection } from '../core/model';
+import { normalizeName, type LoanType, type TransactionDirection } from '../core/model';
 import { cellText, excelDate, excelMoney, excelTime, isBlank } from './values';
 import type {
   CellValue,
@@ -23,6 +23,7 @@ function namedDirection(value: CellValue | undefined, mapping: SheetMapping): Tr
   if (labels(mapping.expenseLabels).includes(text)) candidates.push('expense');
   if (labels(mapping.incomeLabels).includes(text)) candidates.push('income');
   if (labels(mapping.transferLabels).includes(text)) candidates.push('transfer');
+  if (labels(mapping.loanLabels).includes(text)) candidates.push('loan');
   if (candidates.length !== 1)
     throw new Error('收支类型无法唯一识别，请确认类型列或自定义对应值。');
   return candidates[0];
@@ -33,6 +34,22 @@ function boundedName(value: string, label: string) {
   if (!name || name.length > 120 || name.includes('\0'))
     throw new Error(`${label}不能为空，且不能超过120个字。`);
   return name;
+}
+
+function parseLoanType(value: CellValue | undefined): LoanType {
+  const type = cellText(value).toLowerCase();
+  const known: Record<string, LoanType> = {
+    借入: 'borrow',
+    借出: 'lend',
+    还款: 'repay',
+    收款: 'collect',
+    borrow: 'borrow',
+    lend: 'lend',
+    repay: 'repay',
+    collect: 'collect',
+  };
+  if (!known[type]) throw new Error('借贷类型必须是借入、借出、还款或收款。');
+  return known[type];
 }
 
 function parseRow(
@@ -72,7 +89,8 @@ function parseRow(
   }
   let primary = cellText(cell('primary'));
   let secondary = cellText(cell('secondary'));
-  if (direction !== 'transfer' && mapping.columns.path !== null && !isBlank(cell('path'))) {
+  const hasCategory = direction === 'expense' || direction === 'income';
+  if (hasCategory && mapping.columns.path !== null && !isBlank(cell('path'))) {
     if (!mapping.pathSeparator) throw new Error('请填写分类路径分隔符。');
     let pieces = cellText(cell('path'))
       .split(mapping.pathSeparator)
@@ -93,10 +111,11 @@ function parseRow(
     primary ||= pieces[0];
     secondary ||= pieces[1] ?? '';
   }
-  if (direction !== 'transfer') {
+  if (hasCategory) {
     if (!primary) {
       primary = mapping.defaultPrimary;
-      warnings.push('使用默认一级分类');
+      if (!(mapping.legacyFormat && direction === 'income' && primary === '收入'))
+        warnings.push('使用默认一级分类');
     }
     if (!secondary) {
       secondary = mapping.defaultSecondary;
@@ -119,6 +138,21 @@ function parseRow(
   if (toAccount === account) throw new Error('转出和转入账户不能相同。');
   const rawBook = cellText(cell('book'));
   const book = rawBook ? boundedName(rawBook, '账本') : null;
+  let member: string | null = null;
+  if (direction !== 'loan') {
+    const memberValue = cellText(cell('member'));
+    if (!memberValue) warnings.push('成员缺失，使用默认标记');
+    member = boundedName(memberValue || mapping.defaultMember, '成员');
+  }
+  const loanType = direction === 'loan' ? parseLoanType(cell('loanType')) : null;
+  const person =
+    direction === 'loan'
+      ? boundedName(cellText(cell('person')) || mapping.defaultPerson, '借贷人')
+      : null;
+  const transferType =
+    direction === 'transfer' && !isBlank(cell('transferType'))
+      ? boundedName(cellText(cell('transferType')), '转账类型')
+      : undefined;
   const noteValue = cell('note');
   const note = typeof noteValue === 'string' ? noteValue : cellText(noteValue);
   if (note.length > 20_000 || note.includes('\0')) throw new Error('备注过长或包含无效字符。');
@@ -143,6 +177,10 @@ function parseRow(
     toAccount,
     book,
     note,
+    member,
+    person,
+    loanType,
+    ...(transferType ? { transferType } : {}),
     warnings,
   };
 }
@@ -155,7 +193,7 @@ export function prepareImport(workbook: WorkbookData, mappings: SheetMapping[]):
     skipped: [],
     blankRows: 0,
     enabledSheets: 0,
-    totals: { income: 0, expense: 0, transfer: 0 },
+    totals: { income: 0, expense: 0, transfer: 0, loan: 0 },
   };
   for (const mapping of mappings.filter((item) => item.enabled)) {
     const sheet = workbook.sheets.find((item) => item.name === mapping.name);

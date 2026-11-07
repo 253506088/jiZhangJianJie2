@@ -12,6 +12,7 @@ import {
   type TransactionDirection,
   type TransactionSource,
   type TransactionTemplate,
+  type LoanType,
   LedgerError,
   categoryPathKey,
   makeId,
@@ -20,6 +21,7 @@ import {
   validateState,
 } from './model';
 import { addCents } from './money';
+import { ensureSelfMemberDraft } from './people';
 
 function required<T>(value: T | null | undefined, message: string): T {
   if (value === null || value === undefined) throw new LedgerError(message, 'NOT_FOUND');
@@ -92,6 +94,7 @@ export function ensureBookDraft(
     createdAt: nowIso(context),
   };
   draft.books.push(book);
+  ensureSelfMemberDraft(draft, book.id, context);
   return book;
 }
 
@@ -214,6 +217,25 @@ export function createCategoryPath(
     created = !existingIds.has(category.id);
   });
   return { state: next, categoryId, created };
+}
+
+/** The original export has one income category; its stable leaf uses a hidden 收入 parent. */
+export function ensureIncomeCategoryDraft(
+  draft: LedgerState,
+  input: { bookId: string; name: string; icon?: string },
+  context: CommandContext = {},
+): Category {
+  return ensureCategoryPathDraft(
+    draft,
+    {
+      bookId: input.bookId,
+      direction: 'income',
+      primaryName: '收入',
+      secondaryName: input.name,
+      ...(input.icon ? { icon: input.icon } : {}),
+    },
+    context,
+  );
 }
 
 export function createPrimaryCategory(
@@ -455,6 +477,11 @@ export interface TransactionInput {
   accountId: string;
   categoryId?: string | null;
   toAccountId?: string | null;
+  memberId?: string | null;
+  loanType?: LoanType | null;
+  personId?: string | null;
+  /** Undefined preserves a transfer's original label; null clears it explicitly. */
+  transferType?: string | null;
   note?: string;
   source?: TransactionSource;
 }
@@ -474,7 +501,7 @@ export function upsertTransaction(
     );
     if (account.archived && existing?.accountId !== account.id)
       throw new LedgerError('不能使用已归档的账户新增记账', 'ARCHIVED');
-    if (input.direction !== 'transfer') {
+    if (input.direction === 'expense' || input.direction === 'income') {
       const category = required(
         draft.categories.find(
           (item) =>
@@ -490,7 +517,7 @@ export function upsertTransaction(
         existing?.categoryId !== category.id
       )
         throw new LedgerError('不能使用已归档的分类新增记账', 'ARCHIVED');
-    } else {
+    } else if (input.direction === 'transfer') {
       const destination = required(
         draft.accounts.find(
           (item) => item.id === input.toAccountId && item.bookId === input.bookId,
@@ -500,9 +527,49 @@ export function upsertTransaction(
       if (destination.archived && existing?.toAccountId !== destination.id)
         throw new LedgerError('不能转入已归档的账户', 'ARCHIVED');
     }
+    const sameBook = existing?.bookId === input.bookId;
+    let memberId: string | null = null;
+    let personId: string | null = null;
+    let loanType: LoanType | null = null;
+    if (input.direction === 'loan') {
+      personId =
+        input.personId === undefined && sameBook && existing?.direction === 'loan'
+          ? existing.personId
+          : (input.personId ?? null);
+      loanType =
+        input.loanType === undefined && existing?.direction === 'loan'
+          ? existing.loanType
+          : (input.loanType ?? null);
+      const person = required(
+        draft.loanPeople.find((item) => item.id === personId && item.bookId === input.bookId),
+        '请选择当前账本的借贷人',
+      );
+      if (person.archived && existing?.personId !== person.id)
+        throw new LedgerError('不能使用已归档的联系人新增借贷', 'ARCHIVED');
+      if (!loanType) throw new LedgerError('请选择借入、借出、还款或收款');
+    } else {
+      if (input.memberId === null)
+        throw new LedgerError('请明确选择成员；缺少来源信息时使用未指定成员');
+      memberId =
+        input.memberId === undefined && sameBook && existing?.memberId
+          ? existing.memberId
+          : (input.memberId ?? ensureSelfMemberDraft(draft, input.bookId, context).id);
+      const member = required(
+        draft.members.find((item) => item.id === memberId && item.bookId === input.bookId),
+        '成员不属于当前账本',
+      );
+      if (member.archived && existing?.memberId !== member.id)
+        throw new LedgerError('不能使用已归档的成员新增记账', 'ARCHIVED');
+    }
     const now = nowIso(context);
     const time = input.time === undefined ? existing?.time : input.time;
     const source = input.source ?? existing?.source;
+    const transferType =
+      input.direction === 'transfer'
+        ? input.transferType === undefined && existing?.direction === 'transfer'
+          ? existing.transferType
+          : input.transferType
+        : undefined;
     const transaction: Transaction = {
       id: existing?.id ?? input.id ?? makeId(context),
       bookId: input.bookId,
@@ -510,13 +577,20 @@ export function upsertTransaction(
       amountCents: input.amountCents,
       date: input.date,
       accountId: input.accountId,
-      categoryId: input.direction === 'transfer' ? null : (input.categoryId ?? null),
+      categoryId:
+        input.direction === 'transfer' || input.direction === 'loan'
+          ? null
+          : (input.categoryId ?? null),
       toAccountId: input.direction === 'transfer' ? (input.toAccountId ?? null) : null,
+      memberId,
+      personId,
+      loanType,
       note: input.note ?? existing?.note ?? '',
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
       ...(time !== undefined && time !== null ? { time } : {}),
       ...(source ? { source: structuredClone(source) } : {}),
+      ...(transferType !== undefined && transferType !== null ? { transferType } : {}),
     };
     if (existing) draft.transactions[draft.transactions.indexOf(existing)] = transaction;
     else draft.transactions.push(transaction);
@@ -677,7 +751,7 @@ export function removeBudget(state: LedgerState, budgetId: string): LedgerState 
 
 export function upsertTemplate(
   state: LedgerState,
-  input: Omit<TransactionTemplate, 'id'> & { id?: string },
+  input: Omit<TransactionTemplate, 'id' | 'memberId'> & { id?: string; memberId?: string },
   context: CommandContext = {},
 ): LedgerState {
   return withLedgerDraft(state, (draft) => {
@@ -706,7 +780,17 @@ export function upsertTemplate(
       ...input,
       id: existing?.id ?? makeId(context),
       name: cleanName(input.name),
+      memberId:
+        input.memberId ??
+        (existing?.bookId === input.bookId ? existing.memberId : undefined) ??
+        ensureSelfMemberDraft(draft, input.bookId, context).id,
     };
+    const member = required(
+      draft.members.find((item) => item.id === template.memberId && item.bookId === input.bookId),
+      '模板成员不属于该账本',
+    );
+    if (member.archived && existing?.memberId !== member.id)
+      throw new LedgerError('新模板不能使用已归档的成员', 'ARCHIVED');
     if (existing) draft.templates[draft.templates.indexOf(existing)] = template;
     else draft.templates.push(template);
   });

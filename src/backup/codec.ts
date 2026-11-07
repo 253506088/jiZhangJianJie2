@@ -1,4 +1,4 @@
-import { type LedgerState, SCHEMA_VERSION, validateState } from '../core';
+import { type LedgerState, SCHEMA_VERSION, migrateState, validateState } from '../core';
 
 export const BACKUP_FORMAT = 'jizhang-jianjie2-backup' as const;
 export const BACKUP_VERSION = 1 as const;
@@ -48,7 +48,7 @@ interface Integrity {
   digest: string;
 }
 interface Payload {
-  data: LedgerState;
+  data: unknown;
   integrity: Integrity;
 }
 interface PlainEnvelope extends Header, Payload {
@@ -90,6 +90,8 @@ export interface BackupInspection {
 export interface BackupSummary {
   books: number;
   accounts: number;
+  members: number;
+  loanPeople: number;
   primaryCategories: number;
   secondaryCategories: number;
   categoryAliases: number;
@@ -103,13 +105,24 @@ export interface BackupSummary {
   incomeCents: number | null;
   expenseCents: number | null;
   transferCents: number | null;
+  loanInCents: number | null;
+  loanOutCents: number | null;
+  loanCount: number;
   totalsSafe: boolean;
-  exactTotals: { incomeCents: string; expenseCents: string; transferCents: string };
+  exactTotals: {
+    incomeCents: string;
+    expenseCents: string;
+    transferCents: string;
+    loanInCents: string;
+    loanOutCents: string;
+  };
 }
 
 export interface BackupMetadata extends Omit<BackupInspection, 'integrity'> {
   integrity: 'verified';
   schemaVersion: typeof SCHEMA_VERSION;
+  sourceSchemaVersion: 1 | 2;
+  migrated: boolean;
   summary: BackupSummary;
 }
 
@@ -366,7 +379,7 @@ function checkModel(value: unknown): asserts value is LedgerState {
   }
 }
 
-function checkStateSize(state: LedgerState): void {
+function checkStateSize(state: unknown): void {
   if (encoder.encode(canonical(state)).byteLength > MAX_BACKUP_STATE_BYTES)
     throw new BackupError('账本内容超过 64 MiB 备份上限', 'FILE_TOO_LARGE');
 }
@@ -450,6 +463,9 @@ export function summarizeBackupState(state: LedgerState): BackupSummary {
   let income = 0n;
   let expense = 0n;
   let transfer = 0n;
+  let loanIn = 0n;
+  let loanOut = 0n;
+  let loanCount = 0;
   let firstDate: string | null = null;
   let lastDate: string | null = null;
   for (const transaction of state.transactions) {
@@ -457,16 +473,26 @@ export function summarizeBackupState(state: LedgerState): BackupSummary {
     if (lastDate === null || transaction.date > lastDate) lastDate = transaction.date;
     if (transaction.direction === 'income') income += BigInt(transaction.amountCents);
     else if (transaction.direction === 'expense') expense += BigInt(transaction.amountCents);
-    else transfer += BigInt(transaction.amountCents);
+    else if (transaction.direction === 'transfer') transfer += BigInt(transaction.amountCents);
+    else {
+      if (transaction.loanType === 'borrow' || transaction.loanType === 'collect')
+        loanIn += BigInt(transaction.amountCents);
+      else loanOut += BigInt(transaction.amountCents);
+      loanCount++;
+    }
   }
   const safeValue = (value: bigint) =>
     value <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(value) : null;
   const incomeCents = safeValue(income);
   const expenseCents = safeValue(expense);
   const transferCents = safeValue(transfer);
+  const loanInCents = safeValue(loanIn);
+  const loanOutCents = safeValue(loanOut);
   return {
     books: state.books.length,
     accounts: state.accounts.length,
+    members: state.members.length,
+    loanPeople: state.loanPeople.length,
     primaryCategories: state.categories.filter((category) => category.parentId === null).length,
     secondaryCategories: state.categories.filter((category) => category.parentId !== null).length,
     categoryAliases: state.categoryAliases.length,
@@ -479,11 +505,21 @@ export function summarizeBackupState(state: LedgerState): BackupSummary {
     incomeCents,
     expenseCents,
     transferCents,
-    totalsSafe: incomeCents !== null && expenseCents !== null && transferCents !== null,
+    loanInCents,
+    loanOutCents,
+    loanCount,
+    totalsSafe:
+      incomeCents !== null &&
+      expenseCents !== null &&
+      transferCents !== null &&
+      loanInCents !== null &&
+      loanOutCents !== null,
     exactTotals: {
       incomeCents: income.toString(),
       expenseCents: expense.toString(),
       transferCents: transfer.toString(),
+      loanInCents: loanIn.toString(),
+      loanOutCents: loanOut.toString(),
     },
   };
 }
@@ -528,18 +564,27 @@ export async function decodeBackup(
     payload = inner as unknown as Payload;
   }
   checkIntegrity(payload.integrity);
-  checkModel(payload.data);
   checkStateSize(payload.data);
   const expected = await sha256(canonical({ ...headerOf(envelope), data: payload.data }));
   if (!sameDigest(expected, payload.integrity.digest))
     throw new BackupError('备份完整性校验失败，文件可能已被修改或损坏', 'CHECKSUM_MISMATCH');
+  let state: LedgerState;
+  try {
+    state = migrateState(payload.data);
+  } catch {
+    throw new BackupError('备份中的账本结构或关联关系无效，未恢复任何数据', 'INVALID_LEDGER');
+  }
+  checkStateSize(state);
+  const sourceSchemaVersion = (payload.data as { schemaVersion: 1 | 2 }).schemaVersion;
   return {
-    state: payload.data,
+    state,
     metadata: {
       ...inspectionOf(envelope, sizeBytes),
       integrity: 'verified',
       schemaVersion: SCHEMA_VERSION,
-      summary: summarizeBackupState(payload.data),
+      sourceSchemaVersion,
+      migrated: sourceSchemaVersion !== SCHEMA_VERSION,
+      summary: summarizeBackupState(state),
     },
   };
 }

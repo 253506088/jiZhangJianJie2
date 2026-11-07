@@ -55,7 +55,7 @@ export function excelTime(value: CellValue | undefined): string | undefined {
   );
   if (!match || Number(match[1]) > 23 || Number(match[2]) > 59 || Number(match[3] ?? 0) > 59)
     throw new Error('时间需为时:分或时:分:秒。');
-  return `${match[1].padStart(2, '0')}:${match[2]}:${match[3] ?? '00'}`;
+  return `${match[1].padStart(2, '0')}:${match[2]}${match[3] === undefined ? '' : ':' + match[3]}`;
 }
 
 /** Preserve the calendar date written in Excel, without implicit timezone conversion. */

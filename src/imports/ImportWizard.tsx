@@ -105,6 +105,12 @@ export const ImportWizard = forwardRef<ImportWizardHandle, Props>(function Impor
       values.map((item, index) => (index === sheetIndex ? { ...item, ...patch } : item)),
     );
   const columns = sheet?.rows[(mapping?.headerRow ?? 1) - 1] ?? [];
+  const primaryFields: ColumnField[] =
+    mapping?.defaultDirection === 'loan'
+      ? ['date', 'amount', 'loanType', 'person', 'account', 'note']
+      : mapping?.defaultDirection === 'transfer'
+        ? ['date', 'amount', 'account', 'toAccount', 'transferType', 'member', 'note']
+        : ['date', 'direction', 'amount', 'primary', 'secondary', 'account', 'member', 'note'];
   const fieldSelect = (field: ColumnField) => (
     <label key={field}>
       {columnLabels[field]}
@@ -351,25 +357,19 @@ export const ImportWizard = forwardRef<ImportWizardHandle, Props>(function Impor
               </label>
               <span>自动识别是候选，请核对下方对应关系。</span>
             </div>
-            <div className="import-mapping-grid">
-              {(
-                [
-                  'date',
-                  'direction',
-                  'amount',
-                  'primary',
-                  'secondary',
-                  'account',
-                  'note',
-                ] as ColumnField[]
-              ).map(fieldSelect)}
-            </div>
+            <div className="import-mapping-grid">{primaryFields.map(fieldSelect)}</div>
+            {mapping.legacyFormat && (
+              <p className="import-note">
+                已识别原版导出结构：第3行是表头，当前表按“{sheet.name}
+                ”处理。收入的单层类别会保留原名称，成员与借贷人会一起初始化。
+              </p>
+            )}
             <details className="import-advanced">
               <summary>更多格式与字段选项</summary>
               <div className="import-mapping-grid">
-                {(['time', 'expense', 'income', 'path', 'toAccount', 'book'] as ColumnField[]).map(
-                  fieldSelect,
-                )}
+                {(Object.keys(columnLabels) as ColumnField[])
+                  .filter((field) => !primaryFields.includes(field))
+                  .map(fieldSelect)}
                 <label>
                   没有收支列时
                   <select
@@ -386,6 +386,7 @@ export const ImportWizard = forwardRef<ImportWizardHandle, Props>(function Impor
                     <option value="expense">该表全部为支出</option>
                     <option value="income">该表全部为收入</option>
                     <option value="transfer">该表全部为转账</option>
+                    <option value="loan">该表全部为借贷</option>
                     <option value="signed">金额正数收入、负数支出</option>
                   </select>
                 </label>
@@ -407,6 +408,20 @@ export const ImportWizard = forwardRef<ImportWizardHandle, Props>(function Impor
                   <input
                     value={mapping.defaultAccount}
                     onChange={(event) => patchMapping({ defaultAccount: event.target.value })}
+                  />
+                </label>
+                <label>
+                  缺少成员时使用
+                  <input
+                    value={mapping.defaultMember}
+                    onChange={(event) => patchMapping({ defaultMember: event.target.value })}
+                  />
+                </label>
+                <label>
+                  缺少借贷人时使用
+                  <input
+                    value={mapping.defaultPerson}
+                    onChange={(event) => patchMapping({ defaultPerson: event.target.value })}
                   />
                 </label>
                 <label>
@@ -450,6 +465,13 @@ export const ImportWizard = forwardRef<ImportWizardHandle, Props>(function Impor
                   <input
                     value={mapping.transferLabels}
                     onChange={(event) => patchMapping({ transferLabels: event.target.value })}
+                  />
+                </label>
+                <label>
+                  哪些值表示借贷
+                  <input
+                    value={mapping.loanLabels}
+                    onChange={(event) => patchMapping({ loanLabels: event.target.value })}
                   />
                 </label>
               </div>
@@ -585,12 +607,18 @@ export const ImportWizard = forwardRef<ImportWizardHandle, Props>(function Impor
                       转账 <b>¥{formatMoney(result.totals.transfer)}</b>
                     </span>
                   )}
+                  {result.totals.loan > 0 && (
+                    <span>
+                      借贷流水金额 <b>¥{formatMoney(result.totals.loan)}</b>
+                    </span>
+                  )}
                 </div>
                 <div className="import-good">
                   <CheckCircle2 size={20} />
                   <p>
                     分类和流水将一起保存。以后选择相同分类记账，会和本次导入的数据统一统计。新建{' '}
-                    {result.createdAccounts} 个账户、{result.createdBooks} 个账本。
+                    {result.createdAccounts} 个账户、{result.createdBooks} 个账本。 成员{' '}
+                    {result.createdMembers} 人、借贷人 {result.createdLoanPeople} 人会一并初始化。
                   </p>
                 </div>
               </>
@@ -603,7 +631,7 @@ export const ImportWizard = forwardRef<ImportWizardHandle, Props>(function Impor
             {!!plan.rows.filter((row) => row.warnings.length).length && (
               <p className="import-note">
                 {plan.rows.filter((row) => row.warnings.length).length}{' '}
-                条候选记录使用了默认分类或账户，请核对映射。新建账户期初余额为
+                条候选记录使用了默认分类、账户或成员标记，请核对映射。新建账户期初余额为
                 0；表格未提供的期初余额需在账户设置中自行校准。
               </p>
             )}
@@ -664,6 +692,7 @@ export const ImportWizard = forwardRef<ImportWizardHandle, Props>(function Impor
                     <th>金额</th>
                     <th>分类</th>
                     <th>账户</th>
+                    <th>成员 / 借贷人</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -680,13 +709,24 @@ export const ImportWizard = forwardRef<ImportWizardHandle, Props>(function Impor
                           ? '支出'
                           : row.direction === 'income'
                             ? '收入'
-                            : '转账'}
+                            : row.direction === 'transfer'
+                              ? '转账'
+                              : { borrow: '借入', lend: '借出', repay: '还款', collect: '收款' }[
+                                  row.loanType ?? 'borrow'
+                                ]}
                       </td>
                       <td>{formatMoney(row.amountCents)}</td>
                       <td>
-                        {row.primary} / {row.secondary}
+                        {row.direction === 'loan'
+                          ? '借贷'
+                          : row.direction === 'transfer'
+                            ? (row.transferType ?? '转账')
+                            : row.direction === 'income' && row.primary === '收入'
+                              ? row.secondary
+                              : row.primary + ' / ' + row.secondary}
                       </td>
                       <td>{row.account}</td>
+                      <td>{row.direction === 'loan' ? row.person : row.member}</td>
                     </tr>
                   ))}
                 </tbody>

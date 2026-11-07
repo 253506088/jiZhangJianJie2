@@ -14,6 +14,7 @@ import {
   type Transaction,
 } from '../core/model';
 import { addCents } from '../core/money';
+import { ensureMemberDraft, ensureLoanPersonDraft } from '../core/people';
 import type { ImportOptions, ImportPlan, RowIssue } from './types';
 
 export interface ImportResult {
@@ -25,11 +26,13 @@ export interface ImportResult {
   createdBooks: number;
   createdAccounts: number;
   createdCategories: number;
+  createdMembers: number;
+  createdLoanPeople: number;
   latestDate: string | null;
   firstBookId: string;
   batchIds: string[];
   issues: RowIssue[];
-  totals: { income: number; expense: number; transfer: number };
+  totals: Record<Transaction['direction'], number>;
 }
 
 function signature(transaction: Transaction) {
@@ -43,6 +46,10 @@ function signature(transaction: Transaction) {
     transaction.toAccountId,
     transaction.categoryId,
     transaction.note,
+    transaction.memberId,
+    transaction.loanType,
+    transaction.personId,
+    transaction.transferType ?? '',
   ]);
 }
 
@@ -72,11 +79,13 @@ export function applyImport(
     createdBooks: 0,
     createdAccounts: 0,
     createdCategories: 0,
+    createdMembers: 0,
+    createdLoanPeople: 0,
     latestDate: null as string | null,
     firstBookId: target.id,
     batchIds: [] as string[],
     issues,
-    totals: { income: 0, expense: 0, transfer: 0 },
+    totals: { income: 0, expense: 0, transfer: 0, loan: 0 },
   };
   const existingContent = new Map<string, number>();
   const sameFileBatches = new Set(
@@ -105,6 +114,8 @@ export function applyImport(
       books: draft.books.length,
       accounts: draft.accounts.length,
       categories: draft.categories.length,
+      members: draft.members.length,
+      loanPeople: draft.loanPeople.length,
     };
     for (const row of plan.rows) {
       if (
@@ -157,7 +168,7 @@ export function applyImport(
           ? ensureAccountDraft(draft, book.id, row.toAccount!, context)
           : null;
       const category =
-        row.direction !== 'transfer'
+        row.direction === 'expense' || row.direction === 'income'
           ? ensureCategoryPathDraft(
               draft,
               {
@@ -180,6 +191,16 @@ export function applyImport(
         toAccountId: destination?.id ?? null,
         categoryId: category?.id ?? null,
         note: row.note,
+        memberId:
+          row.direction === 'loan'
+            ? null
+            : ensureMemberDraft(draft, book.id, row.member ?? '未指定', context).id,
+        loanType: row.loanType,
+        personId:
+          row.direction === 'loan'
+            ? ensureLoanPersonDraft(draft, book.id, row.person ?? '未指定', context).id
+            : null,
+        ...(row.transferType ? { transferType: row.transferType } : {}),
         createdAt: importedAt,
         updatedAt: importedAt,
         source: { batchId: batch.id, sheet: row.sheet, row: row.row, rawDate: row.rawDate },
@@ -212,6 +233,8 @@ export function applyImport(
     stats.createdBooks = draft.books.length - firstCounts.books;
     stats.createdAccounts = draft.accounts.length - firstCounts.accounts;
     stats.createdCategories = draft.categories.length - firstCounts.categories;
+    stats.createdMembers = draft.members.length - firstCounts.members;
+    stats.createdLoanPeople = draft.loanPeople.length - firstCounts.loanPeople;
   });
   return { state: next, ...stats };
 }

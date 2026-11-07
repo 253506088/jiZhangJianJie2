@@ -1,5 +1,6 @@
 import { Capacitor } from '@capacitor/core';
 import { createEmptyState, validateState, type LedgerState } from '../core/model';
+import { migrateState } from '../core/migrations';
 import { IndexedDbStorage } from './indexed-db';
 import { NativeSqliteStorage } from './native';
 import {
@@ -48,8 +49,8 @@ export async function unpack(snapshot: StoredSnapshot): Promise<LoadedLedger> {
     ) {
       throw new StorageIntegrityError();
     }
-    const state: unknown = JSON.parse(snapshot.data);
-    validateState(state);
+    // The checksum above authenticates the original bytes; migration must not run before it.
+    const state = migrateState(JSON.parse(snapshot.data));
     return { state, revision: snapshot.revision, savedAt: snapshot.savedAt };
   } catch (error) {
     if (error instanceof StorageIntegrityError) throw error;
