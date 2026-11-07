@@ -19,6 +19,7 @@
   "dependencies": {
     "@capacitor/android": "8.6.0",
     "@capacitor/core": "8.6.0",
+    "idb": "8.0.4",
     "lucide-react": "1.70.0",
     "react": "19.3.1",
     "react-dom": "19.3.1"
@@ -29,6 +30,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "6.2.1",
+    "fake-indexeddb": "6.2.7",
     "prettier": "^3.6.2",
     "typescript": "5.9.3",
     "vite": "8.3.6",

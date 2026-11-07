@@ -10,8 +10,18 @@
 - 验证通过：npm test（9项）、npm run build、npm run build:prototype。
 - git check-ignore 确认 APK、analysis/、.tools/、.local/ 和私人 Excel 示例路径均被排除。
 - 提交记录以 Git 中 `[M01]` 开头的提交为准；完成后同步 main 至 origin。
+- 已提交推送：`d391cde`，origin/main 同步成功。
 
 ## M02 · 旧版格式调查（进行中）
 
 - 静态资源只有导出时间范围、目录和确认入口，尚未确定实际列名。
 - 正在使用本项目专用空白 AVD 调查旧 APK，不连接既有模拟器或物理手机，不读取真实账本。
+
+## M03 · 账本核心和可靠存储（已验证）
+
+- 新增 schemaVersion=1 的账本/账户/两级分类/流水/转账/导入批次/分类别名/预算/模板模型，首次数据库只有空的生活账本和现金账户。
+- 完整路径复用、显式重命名别名、分类合并与历史关联校验，避免同名二级分类跨父误合并和新旧流水割裂。
+- Android 使用私有 SQLite 快照事务，Web 使用独立 IndexedDB；保存含SHA-256校验并保留最近3个历史点。采用版本比较防止旧窗口覆盖新数据；保存失败不会更新已确认状态；损坏数据不会自动清空。
+- 验证：全部43项测试通过（原预览9、核心27、存储7），TypeScript通过。Gradle 8.14.3 + 既有JDK21编译SQLite插件通过（compileDebugJavaWithJavac）。
+- 构建没有修改全局Java/Node设置。Gradle发行包使用官方SHA-256固定校验，本项目显式允许用户选择的中文Windows路径。
+- 原生实际运行/重启持久化、UI接入和最终APK仍在后续里程碑，不把编译通过当作完成这些验收。
