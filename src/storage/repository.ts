@@ -123,6 +123,27 @@ export class LedgerRepository {
     return this.mutate(() => copy);
   }
 
+  /** Explicitly confirmed backup recovery may replace a corrupt payload, never corrupt metadata. */
+  restoreFromBackup(state: LedgerState): Promise<LoadedLedger> {
+    validateState(state);
+    const copy = structuredClone(state);
+    return this.enqueue(async () => {
+      const previous = await this.storage.read();
+      const revision = previous?.revision ?? 0;
+      if (!Number.isSafeInteger(revision) || revision < 0 || revision >= 2147483646) {
+        throw new StorageIntegrityError('本地保存版本信息损坏，未覆盖现有数据。');
+      }
+      const snapshot = await pack(copy, revision + 1);
+      await this.storage.write(snapshot, revision);
+      this.current = {
+        state: structuredClone(copy),
+        revision: snapshot.revision,
+        savedAt: snapshot.savedAt,
+      };
+      return structuredClone(this.current);
+    });
+  }
+
   async recoveryPoints(): Promise<LoadedLedger[]> {
     await this.queue;
     const results: LoadedLedger[] = [];

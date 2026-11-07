@@ -5,6 +5,7 @@ const config: CapacitorConfig = {
   appName: '简洁记账·预览',
   webDir: 'dist',
   backgroundColor: '#faf9f6',
+  loggingBehavior: 'none',
   android: { backgroundColor: '#faf9f6' },
 };
 

@@ -125,6 +125,21 @@ describe('正式账本持久化', () => {
     expect((await store.load()).revision).toBe(4);
   });
 
+  it('明确恢复外部备份可修复损坏快照，旧内容仍保留在历史中', async () => {
+    const name = crypto.randomUUID();
+    const store = repository(name);
+    const valid = await store.load();
+    const database = await openDB(name);
+    const original = (await database.get('current', 'ledger')) as StoredSnapshot;
+    await database.put('current', { ...original, data: 'damaged' }, 'ledger');
+    database.close();
+    await expect(store.load()).rejects.toBeInstanceOf(StorageIntegrityError);
+    const restored = await store.restoreFromBackup(valid.state);
+    expect(restored.revision).toBe(2);
+    expect((await store.load()).state).toEqual(valid.state);
+    expect((await store.storage.history())[0].data).toBe('damaged');
+  });
+
   it('保留最近3个历史保存点，并验证结构与摘要', async () => {
     const store = repository();
     await store.load();
