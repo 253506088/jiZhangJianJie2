@@ -28,6 +28,9 @@
 - npm 已设置项目级 `.npmrc`，今后本项目包缓存写入 `.tools/npm-cache`（D盘）；不会清空系统共享 npm 缓存。
 - 浏览器自动化的临时 profile、下载缓存和跟踪结果在 `.tools/test-tmp`、`.tools/e2e-results`（D盘），不使用用户浏览器 profile。
 - Android 构建复用已有 JDK21：`C:\Users\black\.jdks\corretto-21.0.10`，仅设置构建进程的 JAVA_HOME/PATH。
-- 初次插件编译复用了原有 Gradle 用户缓存。后续构建脚本将使用本项目 D 盘 `.tools/gradle-home`；不删除或改动 C 盘其他项目共用的 Gradle/SDK 安装。
+- 初次插件编译复用了原有 Gradle 用户缓存。后续实际构建已改用 D 盘项目专属缓存；Windows在中文路径缓存中出现Gradle临时目录移动失败，因此缓存从 `.tools/gradle-home` 移到了 **`D:\code\my\2\.jizhang-gradle-cache`**（ASCII路径），并写入 `jizhang-owner.json` 标识所属项目。应用源代码没有搬走。
+- 构建临时目录也位于该D盘缓存内的 `build-tmp`；构建脚本可通过 `-BuildCache` 显式指定另一个目录。没有通过回退到C盘解决缓存问题，也没有删除或改动其他项目共用的Gradle/SDK安装。
+- 不再需要此构建缓存时，先确认本项目Gradle进程已退出，核对该目录中的owner记录后可删除整个 `.jizhang-gradle-cache`。这是可重新下载的缓存，不是签名密钥或用户账本。
+- **签名密钥在 `.local/signing`（D盘项目内）**，与工具缓存不同。升级已安装App需要保留同一密钥；不要把它当缓存清掉。生成脚本在发现旧签名身份但私钥缺失时会拒绝静默创建新身份。私钥/密码不进Git，公开指纹记录在docs/signing-public.json。
 
 `.tools/`、个人数据、签名密钥、原 APK、反编译生成物、日志与构建产物已由 `.gitignore` 排除。应用的源代码、测试、配置和本说明正常提交到 Git。
