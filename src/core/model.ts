@@ -92,6 +92,8 @@ export interface ImportBatch {
   rejectedRows: number;
   /** Historical import identity: IDs remain here after a transaction is deleted. */
   transactionIds: string[];
+  /** Retained after deletion so a repeated/partial import cannot resurrect the same source row. */
+  sourceRows?: { sheet: string; row: number; transactionId: string }[];
 }
 
 export interface Budget {
@@ -141,7 +143,13 @@ export class LedgerError extends Error {
 }
 
 export function makeId(context: CommandContext = {}): string {
-  return context.idFactory?.() ?? crypto.randomUUID();
+  if (context.idFactory) return context.idFactory();
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const value = [...bytes].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+  return `${value.slice(0, 8)}-${value.slice(8, 12)}-${value.slice(12, 16)}-${value.slice(16, 20)}-${value.slice(20)}`;
 }
 
 export function nowIso(context: CommandContext = {}): string {
@@ -427,6 +435,7 @@ export function validateState(value: unknown): asserts value is LedgerState {
     );
   }
 
+  const importedSourceKeys = new Set<string>();
   for (const batch of value.imports) {
     record(batch, '导入批次');
     identifier(batch.id, '导入批次标识');
@@ -459,10 +468,38 @@ export function validateState(value: unknown): asserts value is LedgerState {
       requireValue(!ids.has(id), '导入批次内的流水标识重复');
       ids.add(id);
     }
+    if (batch.sourceRows !== undefined) {
+      list(batch.sourceRows, '导入来源行', MAX_TRANSACTIONS);
+      requireValue(batch.sourceRows.length === batch.importedRows, '导入来源行数量不匹配');
+      const rowIds = new Set<string>();
+      for (const source of batch.sourceRows) {
+        record(source, '导入来源行');
+        string(source.sheet, '来源工作表', 255);
+        requireValue(
+          Number.isSafeInteger(source.row) && (source.row as number) >= 1,
+          '来源行号不正确',
+        );
+        identifier(source.transactionId, '导入来源流水');
+        requireValue(
+          ids.has(source.transactionId) && !rowIds.has(source.transactionId),
+          '来源行与导入流水不一致',
+        );
+        rowIds.add(source.transactionId);
+        const key = JSON.stringify([batch.bookId, batch.digest, source.sheet, source.row]);
+        requireValue(!importedSourceKeys.has(key), '同一文件来源行已经导入');
+        importedSourceKeys.add(key);
+      }
+    }
   }
   const batches = distinctIds(state.imports, '导入批次');
   const batchTransactionIds = new Map(
     state.imports.map((batch) => [batch.id, new Set(batch.transactionIds)]),
+  );
+  const batchSourceById = new Map(
+    state.imports.map((batch) => [
+      batch.id,
+      new Map((batch.sourceRows ?? []).map((source) => [source.transactionId, source])),
+    ]),
   );
   const sourceRows = new Set<string>();
   for (const transaction of value.transactions) {
@@ -524,6 +561,15 @@ export function validateState(value: unknown): asserts value is LedgerState {
           batchTransactionIds.get(batch.id)!.has(transaction.id),
         '流水来源批次无效',
       );
+      if (batch?.sourceRows) {
+        const imported = batchSourceById.get(batch.id)?.get(transaction.id);
+        requireValue(
+          imported &&
+            imported.sheet === transaction.source.sheet &&
+            imported.row === transaction.source.row,
+          '流水来源与批次行号不一致',
+        );
+      }
       const key = JSON.stringify([
         transaction.source.batchId,
         transaction.source.sheet,
