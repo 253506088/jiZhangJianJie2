@@ -1,0 +1,41 @@
+# Reproducible dependencies and generated web bundles.
+node_modules/
+/dist/
+/dist-prototype/
+.vite/
+coverage/
+# Local tools, upstream APK inputs, decompiler output and captured evidence.
+# Only curated findings under docs/ are committed; these can be large or upstream-owned.
+.tools/
+/analysis/
+*.apk
+*.aab
+# Signing credentials and machine-specific configuration must stay local.
+*.jks
+*.keystore
+.local/
+android/.gradle/
+android/**/build/
+android/local.properties
+android/capacitor-cordova-android-plugins/
+.idea/
+*.log
+.env*
+!.env.example
+# Personal ledger files must never be collected here.
+private-data/
+import-samples/*
+!import-samples/README.md
+# Real exports/databases are not repository inputs. Only explicitly fabricated fixtures may be added.
+*.xls
+*.xlsx
+*.csv
+*.db
+*.sqlite
+*.sqlite3
+!tests/fixtures/**/*.xls
+!tests/fixtures/**/*.xlsx
+!tests/fixtures/**/*.csv
+# Screenshots, local runtime traces, and installable build outputs are delivered separately.
+preview-artifacts/
+artifacts/
