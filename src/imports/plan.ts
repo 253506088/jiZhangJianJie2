@@ -1,5 +1,5 @@
 import { addCents } from '../core/money';
-import { normalizeName, type LoanType, type TransactionDirection } from '../core/model';
+import { MAX_TRANSACTIONS, normalizeName, type LoanType, type TransactionDirection } from '../core/model';
 import { cellText, excelDate, excelMoney, excelTime, isBlank } from './values';
 import type {
   CellValue,
@@ -83,8 +83,9 @@ function parseRow(
     else if (mapping.defaultDirection === 'signed') direction = amount < 0 ? 'expense' : 'income';
     else if (mapping.defaultDirection) direction = mapping.defaultDirection;
     else throw new Error('缺少收支类型，请选择类型列或明确该表的默认收支。');
-    if (direction === 'income' && amount < 0 && mapping.defaultDirection !== 'signed')
-      throw new Error('收入记录金额为负，请确认冲销含义，不会自动把它改为正收入。');
+    const directionFromSign = isBlank(cell('direction')) && mapping.defaultDirection === 'signed';
+    if (amount < 0 && !directionFromSign)
+      throw new Error('原金额为负，需核对退款/冲销或收支符号规则；不会自动改成正数。只有明确按金额符号决定收支时才转换方向。');
     amountCents = Math.abs(amount);
   }
   let primary = cellText(cell('primary'));
@@ -262,6 +263,7 @@ export function prepareImport(workbook: WorkbookData, mappings: SheetMapping[]):
     }
   }
   if (!plan.enabledSheets) throw new Error('请至少选择一张工作表。');
+  if (plan.rows.length + plan.errors.length > MAX_TRANSACTIONS) throw new Error('实际流水超过20万条，请按年份分批导出。');
   for (const row of plan.rows)
     plan.totals[row.direction] = addCents(plan.totals[row.direction], row.amountCents);
   return plan;

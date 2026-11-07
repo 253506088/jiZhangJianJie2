@@ -35,6 +35,15 @@ function plan(data: WorkbookData) {
 }
 
 describe('Excel日期、金额与映射', () => {
+  it('负值不会被静默当成正消费，只有明确的符号映射可转换方向', () => {
+    const data=workbook([header,row('2018-01-02',-10)]);
+    const mapping=autoMapping(data.sheets[0]);
+    expect(prepareImport(data,[mapping]).errors).toHaveLength(1);
+    mapping.defaultDirection='signed';
+    expect(prepareImport(data,[mapping]).errors).toHaveLength(1);
+    mapping.columns.direction=null;
+    expect(prepareImport(data,[mapping]).rows[0]).toMatchObject({direction:'expense',amountCents:1000});
+  });
   it('保留小数金额的分值和人民币显示格式，拒绝真实多余精度', () => {
     expect(excelMoney('￥1,234.50')).toBe(123450);
     expect(excelMoney(0.1 + 0.2)).toBe(30);

@@ -3,6 +3,8 @@ import type { CellValue, WorkbookData } from './types';
 
 export const MAX_EXCEL_BYTES = 32 * 1024 * 1024;
 const MAX_ROWS = 200_000;
+// The record cap does not include the header/title rows emitted by the four-sheet format.
+const MAX_PHYSICAL_ROWS = MAX_ROWS + 40 * 60;
 const MAX_COLUMNS = 256;
 
 function guardZip(bytes: Uint8Array) {
@@ -57,7 +59,7 @@ export function readWorkbookBytes(
       cellFormula: true,
       cellStyles: false,
       cellHTML: false,
-      sheetRows: MAX_ROWS + 1,
+      sheetRows: MAX_PHYSICAL_ROWS + 1,
       bookVBA: false,
     });
   } catch {
@@ -71,10 +73,10 @@ export function readWorkbookBytes(
     const ref = sheet['!fullref'] || sheet['!ref'];
     if (!ref) return { name, rows: [] };
     const range = XLSX.utils.decode_range(ref);
-    if (range.e.r >= MAX_ROWS || range.e.c >= MAX_COLUMNS)
+    if (range.e.r >= MAX_PHYSICAL_ROWS || range.e.c >= MAX_COLUMNS)
       throw new Error('工作表超过 20 万行或 256 列，请分批导出。');
     totalRows += range.e.r + 1;
-    if (totalRows > MAX_ROWS) throw new Error('整个文件超过 20 万行，请分批导出。');
+    if (totalRows > MAX_PHYSICAL_ROWS) throw new Error('整个文件超过记录与表头规模上限，请分批导出。');
     const rows: CellValue[][] = [];
     for (let row = 0; row <= range.e.r; row++) {
       const cells: CellValue[] = [];
