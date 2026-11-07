@@ -3,6 +3,7 @@ import {
   type AccountKind,
   type Book,
   type Budget,
+  type BudgetPeriod,
   type Category,
   type CategoryAlias,
   type CommandContext,
@@ -18,10 +19,13 @@ import {
   makeId,
   normalizeName,
   nowIso,
+  localDate,
+  isValidDate,
   validateState,
 } from './model';
 import { addCents } from './money';
 import { ensureSelfMemberDraft } from './people';
+import { budgetPeriod, budgetScopeKey, periodRange } from './budget-periods';
 
 function required<T>(value: T | null | undefined, message: string): T {
   if (value === null || value === undefined) throw new LedgerError(message, 'NOT_FOUND');
@@ -337,15 +341,28 @@ export function renameCategory(
   });
 }
 
-function coalesceBudgets(draft: LedgerState) {
-  const merged = new Map<string, Budget>();
+function coalesceBudgets(draft: LedgerState, originalCategoryByBudget: Map<string, string | null>) {
+  const groups = new Map<string, Budget[]>();
   for (const budget of draft.budgets) {
-    const key = JSON.stringify([budget.bookId, budget.month, budget.categoryId]);
-    const existing = merged.get(key);
-    if (existing) existing.amountCents = addCents(existing.amountCents, budget.amountCents);
-    else merged.set(key, budget);
+    const key = JSON.stringify([budgetScopeKey(budget), budget.categoryId]);
+    const group = groups.get(key) ?? [];
+    group.push(budget);
+    groups.set(key, group);
   }
-  draft.budgets = [...merged.values()];
+  draft.budgets = [...groups.values()].flatMap((group) => {
+    const perOrigin = new Map<string | null, number>();
+    for (const budget of group) {
+      const origin = originalCategoryByBudget.get(budget.id) ?? budget.categoryId;
+      perOrigin.set(origin, Math.max(perOrigin.get(origin) ?? 0, budget.amountCents));
+    }
+    // Keep unrelated repeated records intact. Only distinct category scopes that became one are combined.
+    if (perOrigin.size <= 1) return group;
+    const target =
+      group.find((budget) => originalCategoryByBudget.get(budget.id) === budget.categoryId) ??
+      group[0];
+    const amountCents = [...perOrigin.values()].reduce((sum, amount) => addCents(sum, amount), 0);
+    return [{ ...target, amountCents }];
+  });
 }
 
 function mergeLeafDraft(draft: LedgerState, source: Category, target: Category) {
@@ -370,6 +387,9 @@ export function mergeCategories(
   sourceId: string,
   targetId: string,
 ): LedgerState {
+  const originalCategoryByBudget = new Map(
+    state.budgets.map((budget) => [budget.id, budget.categoryId]),
+  );
   return withLedgerDraft(state, (draft) => {
     if (sourceId === targetId) throw new LedgerError('不能合并到分类自身', 'INVALID_MERGE');
     const source = required(
@@ -404,7 +424,7 @@ export function mergeCategories(
       draft.categories = draft.categories.filter((item) => item.id !== source.id);
       target.archived = false;
     }
-    coalesceBudgets(draft);
+    coalesceBudgets(draft, originalCategoryByBudget);
   });
 }
 
@@ -726,17 +746,79 @@ export function setBudget(
   input: Omit<Budget, 'id'>,
   context: CommandContext = {},
 ): LedgerState {
+  if (input.recurring === true || (input.period !== undefined && input.period !== 'month'))
+    throw new LedgerError('setBudget仅处理固定月份，请使用周期预算接口');
   return withLedgerDraft(state, (draft) => {
     activeBook(draft, input.bookId);
     const existing = draft.budgets.find(
       (item) =>
         item.bookId === input.bookId &&
+        item.recurring !== true &&
+        budgetPeriod(item) === 'month' &&
         item.month === input.month &&
         item.categoryId === input.categoryId,
     );
     if (existing) existing.amountCents = input.amountCents;
     else draft.budgets.push({ ...input, id: makeId(context) });
   });
+}
+
+export interface PeriodBudgetInput {
+  id?: string;
+  bookId: string;
+  period: BudgetPeriod;
+  categoryId: string | null;
+  amountCents: number;
+  recurring?: boolean;
+  anchorDate?: string;
+}
+
+/** New entries repeat by default; editing uses identity, never silently overwrites another allocation. */
+export function setPeriodBudget(
+  state: LedgerState,
+  input: PeriodBudgetInput,
+  context: CommandContext = {},
+): LedgerState {
+  return withLedgerDraft(state, (draft) => {
+    activeBook(draft, input.bookId);
+    const existing = input.id
+      ? required(
+          draft.budgets.find((budget) => budget.id === input.id && budget.bookId === input.bookId),
+          '要编辑的预算不存在',
+        )
+      : undefined;
+    const recurring = input.recurring ?? (existing ? existing.recurring === true : true);
+    let anchorDate =
+      input.anchorDate ??
+      existing?.anchorDate ??
+      (existing && !existing.recurring
+        ? `${existing.month}-01`
+        : localDate(new Date(nowIso(context))));
+    if (!isValidDate(anchorDate)) throw new LedgerError('预算锚定日期不正确');
+    if (!recurring)
+      anchorDate = periodRange(anchorDate, input.period, draft.settings.weekStartsOn ?? 1).fromDate;
+    const budget: Budget = {
+      ...existing,
+      id: existing?.id ?? makeId(context),
+      bookId: input.bookId,
+      month: anchorDate.slice(0, 7),
+      categoryId: input.categoryId,
+      amountCents: input.amountCents,
+      period: input.period,
+      recurring,
+      anchorDate,
+    };
+    if (existing) draft.budgets[draft.budgets.indexOf(existing)] = budget;
+    else draft.budgets.push(budget);
+  });
+}
+
+export function setRecurringBudget(
+  state: LedgerState,
+  input: Omit<PeriodBudgetInput, 'recurring'>,
+  context: CommandContext = {},
+): LedgerState {
+  return setPeriodBudget(state, { ...input, recurring: true }, context);
 }
 
 export function removeBudget(state: LedgerState, budgetId: string): LedgerState {

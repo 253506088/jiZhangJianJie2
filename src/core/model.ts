@@ -1,3 +1,5 @@
+import { budgetScopeKey } from './budget-periods';
+
 /** The versioned, portable ledger model. No device or UI dependencies belong here. */
 export const SCHEMA_VERSION = 2 as const;
 export const MAX_AMOUNT_CENTS = 99_999_999_999;
@@ -7,6 +9,7 @@ export type Direction = 'expense' | 'income';
 export type TransactionDirection = Direction | 'transfer' | 'loan';
 export type LoanType = 'borrow' | 'lend' | 'repay' | 'collect';
 export type HomeLayout = 'overview' | 'classic';
+export type BudgetPeriod = 'day' | 'week' | 'month';
 export const ACCENT_COLORS = [
   'blue',
   'pink',
@@ -152,6 +155,11 @@ export interface Budget {
   id: string;
   bookId: string;
   month: string;
+  /** Absent fields preserve the original fixed-month semantics. */
+  period?: BudgetPeriod;
+  recurring?: boolean;
+  /** Creation date for recurring templates; immutable window start for a fixed day/week. */
+  anchorDate?: string;
   /** null means the whole book; a category can be first or second level. */
   categoryId: string | null;
   amountCents: number;
@@ -188,6 +196,7 @@ export interface LedgerState {
     theme: Theme;
     homeLayout: HomeLayout;
     accentColor: AccentColor;
+    weekStartsOn?: 0 | 1;
   };
 }
 
@@ -294,6 +303,7 @@ export function createEmptyState(context: CommandContext = {}): LedgerState {
       theme: 'light',
       homeLayout: 'overview',
       accentColor: 'blue',
+      weekStartsOn: 1,
     },
   };
 }
@@ -425,6 +435,11 @@ export function validateState(value: unknown): asserts value is LedgerState {
     ACCENT_COLORS.includes(value.settings.accentColor as AccentColor),
     '主题配色设置不正确',
   );
+  if (value.settings.weekStartsOn !== undefined)
+    requireValue(
+      value.settings.weekStartsOn === 0 || value.settings.weekStartsOn === 1,
+      '周起始日设置不正确',
+    );
 
   const accountNames = new Set<string>();
   for (const account of value.accounts) {
@@ -794,6 +809,23 @@ export function validateState(value: unknown): asserts value is LedgerState {
     identifier(budget.id, '预算标识');
     identifier(budget.bookId, '预算所属账本');
     requireValue(books.has(budget.bookId) && isValidMonth(budget.month), '预算账本或月份不正确');
+    if (
+      budget.period !== undefined ||
+      budget.recurring !== undefined ||
+      budget.anchorDate !== undefined
+    ) {
+      requireValue(['day', 'week', 'month'].includes(budget.period as string), '预算周期不正确');
+      requireValue(typeof budget.recurring === 'boolean', '预算循环状态不正确');
+      if (budget.anchorDate !== undefined) {
+        requireValue(isValidDate(budget.anchorDate), '预算锚定日期不正确');
+        requireValue(
+          budget.month === (budget.anchorDate as string).slice(0, 7),
+          '预算锚定月份不一致',
+        );
+      }
+      if (budget.recurring === false && budget.period !== 'month')
+        requireValue(isValidDate(budget.anchorDate), '固定日/周预算必须有起始日期');
+    }
     moneyValue(budget.amountCents, '预算金额');
     requireValue(
       budget.categoryId === null || typeof budget.categoryId === 'string',
@@ -806,9 +838,13 @@ export function validateState(value: unknown): asserts value is LedgerState {
         '预算只能关联本账本的支出分类',
       );
     }
-    const key = JSON.stringify([budget.bookId, budget.month, budget.categoryId]);
-    requireValue(!budgetKeys.has(key), '同一范围预算重复');
-    budgetKeys.add(key);
+    const key = JSON.stringify([budgetScopeKey(budget as unknown as Budget), budget.categoryId]);
+    // Multiple recurring allocations match the original UI; effective limits choose maxima.
+    // Older fixed-month records retain their prior uniqueness contract.
+    if (budget.recurring !== true) {
+      requireValue(!budgetKeys.has(key), '同一固定范围预算重复');
+      budgetKeys.add(key);
+    }
   }
   distinctIds(state.budgets, '预算');
   const templateNames = new Set<string>();

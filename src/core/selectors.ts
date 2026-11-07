@@ -10,6 +10,7 @@ import {
   LedgerError,
 } from './model';
 import { addCents } from './money';
+import { budgetProgressForRecord } from './budgets';
 
 export interface TransactionFilter {
   bookId?: string;
@@ -376,23 +377,8 @@ export function loanPeopleTotals(
     );
 }
 
-export function budgetProgress(state: LedgerState, budgetId: string) {
-  const budget = state.budgets.find((item) => item.id === budgetId);
-  if (!budget) throw new LedgerError('预算不存在', 'NOT_FOUND');
-  const spentCents = transactionTotals(
-    filterTransactions(state, {
-      bookId: budget.bookId,
-      month: budget.month,
-      direction: 'expense',
-      ...(budget.categoryId ? { categoryId: budget.categoryId } : {}),
-    }),
-  ).expenseCents;
-  return {
-    budget,
-    spentCents,
-    remainingCents: addCents(budget.amountCents, -spentCents),
-    ratio: spentCents / budget.amountCents,
-  };
+export function budgetProgress(state: LedgerState, budgetId: string, date?: string) {
+  return budgetProgressForRecord(state, budgetId, date);
 }
 
 export function previewCategoryMerge(state: LedgerState, sourceId: string, targetId: string) {
