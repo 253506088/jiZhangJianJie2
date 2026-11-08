@@ -23,6 +23,35 @@ afterEach(async () => {
 });
 
 describe('正式账本持久化', () => {
+  it('历史列表只读取元信息，选择后才载入并校验单个保存点', async () => {
+    const backing = new IndexedDbStorage(crypto.randomUUID());
+    const adapter: SnapshotStorage = {
+      read:()=>backing.read(),write:(snapshot,revision)=>backing.write(snapshot,revision),
+      history:()=>Promise.reject(new Error('Should not bulk-load history')),
+      historyHeaders:()=>backing.historyHeaders(),readHistory:revision=>backing.readHistory(revision),close:()=>backing.close(),
+    };
+    const store=new LedgerRepository(adapter);repositories.push(store);
+    const initial=await store.load();
+    await store.mutate(state=>({...state,settings:{...state.settings,theme:'dark'}}));
+    const headers=await store.recoveryHeaders();
+    expect(headers).toHaveLength(1);
+    expect('data' in headers[0]).toBe(false);
+    expect((await store.inspectRecovery(headers[0].revision)).state).toEqual(initial.state);
+    expect((await store.recover(headers[0].revision)).state).toEqual(initial.state);
+  });
+
+  it('已列出的损坏历史点不能通过选择校验，也不能替换当前数据', async()=>{
+    const name=crypto.randomUUID();const store=repository(name);
+    await store.load();await store.mutate(state=>({...state,settings:{...state.settings,theme:'dark'}}));
+    const current=await store.load();const database=await openDB(name);
+    const point=await database.get('history',1) as StoredSnapshot;
+    await database.put('history',{...point,data:'broken'});database.close();
+    expect(await store.recoveryHeaders()).toHaveLength(1);
+    await expect(store.inspectRecovery(1)).rejects.toBeInstanceOf(StorageIntegrityError);
+    await expect(store.recover(1)).rejects.toBeInstanceOf(StorageIntegrityError);
+    expect(await store.load()).toEqual(current);
+  });
+
   it('首次启动为空账本，重新打开保留保存结果', async () => {
     const name = crypto.randomUUID();
     const first = repository(name);

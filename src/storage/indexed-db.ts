@@ -52,6 +52,21 @@ export class IndexedDbStorage implements SnapshotStorage {
     return (await (await this.database).getAll('history')).sort((a, b) => b.revision - a.revision);
   }
 
+  async historyHeaders() {
+    const headers = [];
+    let cursor = await (await this.database).transaction('history').store.openCursor(null, 'prev');
+    while (cursor) {
+      const {revision, savedAt, sha256, data} = cursor.value;
+      headers.push({revision, savedAt, sha256, bytes: new TextEncoder().encode(data).byteLength});
+      cursor = await cursor.continue();
+    }
+    return headers;
+  }
+
+  async readHistory(revision: number) {
+    return (await (await this.database).get('history', revision)) ?? null;
+  }
+
   async close() {
     (await this.database).close();
   }

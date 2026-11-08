@@ -1,7 +1,7 @@
 {
-  "name": "keepaccounts-preview",
+  "name": "jizhang-jianjie2",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -10,6 +10,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "format": "prettier --write src vite.config.ts capacitor.config.ts tsconfig.json package.json index.html",
     "format:check": "prettier --check src vite.config.ts capacitor.config.ts tsconfig.json package.json index.html",
     "android:add": "cap add android",

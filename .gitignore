@@ -13,6 +13,8 @@ coverage/
 # Signing credentials and machine-specific configuration must stay local.
 *.jks
 *.keystore
+*.p12
+*.pfx
 .local/
 android/.gradle/
 android/**/build/
@@ -33,6 +35,10 @@ import-samples/*
 *.db
 *.sqlite
 *.sqlite3
+*.jzbackup
+*.backup
+/backups/
+/exports/
 !tests/fixtures/**/*.xls
 !tests/fixtures/**/*.xlsx
 !tests/fixtures/**/*.csv

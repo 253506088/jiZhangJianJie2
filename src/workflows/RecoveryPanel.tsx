@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { X, History, LoaderCircle, AlertTriangle } from 'lucide-react';
 import type { LedgerRepository, LoadedLedger } from '../storage/repository';
+import type { SnapshotHeader } from '../storage/types';
 import type { Theme } from '../core';
 import '../imports/wizard.css';
 
@@ -16,7 +17,10 @@ export const RecoveryPanel = forwardRef<
     onRestored(value: LoadedLedger): void;
   }
 >(function RecoveryPanel({ repository, theme, onClose, onRestored }, ref) {
-  const [points, setPoints] = useState<LoadedLedger[]>([]);
+  const [points, setPoints] = useState<SnapshotHeader[]>([]);
+  const [verified, setVerified] = useState<LoadedLedger | null>(null);
+  const [checking, setChecking] = useState(false);
+  const requestId = useRef(0);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -26,6 +30,7 @@ export const RecoveryPanel = forwardRef<
   const dialog = useRef<HTMLDialogElement>(null);
   const close = () => {
     if (writing.current) return false;
+    requestId.current++;
     onClose();
     return true;
   };
@@ -34,7 +39,7 @@ export const RecoveryPanel = forwardRef<
     dialog.current?.showModal();
     let alive = true;
     repository
-      .recoveryPoints()
+      .recoveryHeaders()
       .then((values) => {
         if (alive) setPoints(values);
       })
@@ -46,10 +51,23 @@ export const RecoveryPanel = forwardRef<
       });
     return () => {
       alive = false;
+      requestId.current++;
     };
   }, [repository]);
+  const inspect = async (revision: number) => {
+    const request = ++requestId.current;
+    setSelected(revision); setConfirmed(false); setVerified(null); setChecking(true); setError('');
+    try {
+      const value = await repository.inspectRecovery(revision);
+      if (request === requestId.current) setVerified(value);
+    } catch (cause) {
+      if (request === requestId.current) setError(cause instanceof Error ? cause.message : '这个保存点未通过校验');
+    } finally {
+      if (request === requestId.current) setChecking(false);
+    }
+  };
   const restore = async () => {
-    if (selected === null || !confirmed || writing.current) return;
+    if (selected === null || !confirmed || !verified || checking || writing.current) return;
     writing.current = true;
     setBusy(true);
     setError('');
@@ -80,7 +98,7 @@ export const RecoveryPanel = forwardRef<
         </button>
         <div>
           <h1 id="recovery-title">历史保存点</h1>
-          <p>最近三个已校验的保存版本，仅保存在本机</p>
+          <p>最近三个本机保存版本，选择后逐一校验</p>
         </div>
       </header>
       <div className="import-body">
@@ -110,22 +128,20 @@ export const RecoveryPanel = forwardRef<
                 name="recovery-version"
                 checked={selected === point.revision}
                 disabled={busy}
-                onChange={() => {
-                  setSelected(point.revision);
-                  setConfirmed(false);
-                }}
+                onChange={() => void inspect(point.revision)}
               />
               <div>
                 <strong>{new Date(point.savedAt).toLocaleString('zh-CN')}</strong>
                 <span>
-                  版本 {point.revision} · {point.state.transactions.length} 笔流水 ·{' '}
-                  {point.state.books.length} 个账本 · {point.state.categories.length} 个分类
+                  版本 {point.revision} · {(point.bytes / 1024 / 1024).toFixed(2)} MB
                 </span>
               </div>
             </label>
           ))
         )}
-        {selected !== null && (
+        {checking && <p className="root-loading"><LoaderCircle className="import-spin" size={18}/>校验所选保存点…</p>}
+        {verified && !checking && <p className="import-good">校验通过：{verified.state.transactions.length} 笔流水、{verified.state.books.length} 个账本、{verified.state.categories.length} 个分类。</p>}
+        {verified && !checking && (
           <label className="import-check import-warning">
             <input
               type="checkbox"
@@ -149,7 +165,7 @@ export const RecoveryPanel = forwardRef<
         </button>
         <button
           className="import-primary"
-          disabled={!confirmed || selected === null || busy}
+          disabled={!confirmed || selected === null || !verified || checking || busy}
           onClick={() => void restore()}
         >
           {busy ? '恢复中…' : '恢复所选版本'}

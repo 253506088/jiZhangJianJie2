@@ -158,10 +158,30 @@ export class LedgerRepository {
     return results;
   }
 
+  async recoveryHeaders() {
+    await this.queue;
+    const headers = this.storage.historyHeaders
+      ? await this.storage.historyHeaders()
+      : (await this.storage.history()).map(({revision,savedAt,sha256,data})=>({revision,savedAt,sha256,bytes:new TextEncoder().encode(data).byteLength}));
+    return headers.filter(header=>Number.isSafeInteger(header.revision) && header.revision>0 && Number.isFinite(Date.parse(header.savedAt)) && /^[a-f0-9]{64}$/.test(header.sha256));
+  }
+
+  private async historySnapshot(revision: number) {
+    return this.storage.readHistory
+      ? this.storage.readHistory(revision)
+      : (await this.storage.history()).find(snapshot=>snapshot.revision===revision) ?? null;
+  }
+
+  async inspectRecovery(revision: number): Promise<LoadedLedger> {
+    await this.queue;
+    const snapshot = await this.historySnapshot(revision);
+    if (!snapshot) throw new Error('该保存点已不存在，请重新读取列表。');
+    return unpack(snapshot);
+  }
+
   recover(revision: number): Promise<LoadedLedger> {
     return this.enqueue(async () => {
-      const history = await this.storage.history();
-      const selected = history.find((snapshot) => snapshot.revision === revision);
+      const selected = await this.historySnapshot(revision);
       if (!selected) throw new Error('该保存点已不存在，请重新载入恢复列表。');
       const recovered = await unpack(selected);
       const current = await this.storage.read();

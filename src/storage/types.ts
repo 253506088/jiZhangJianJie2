@@ -9,7 +9,16 @@ export interface SnapshotStorage {
   read(): Promise<StoredSnapshot | null>;
   write(snapshot: StoredSnapshot, expectedRevision: number): Promise<void>;
   history(): Promise<StoredSnapshot[]>;
+  historyHeaders?(): Promise<SnapshotHeader[]>;
+  readHistory?(revision: number): Promise<StoredSnapshot | null>;
   close?(): Promise<void>;
+}
+
+export interface SnapshotHeader {
+  revision: number;
+  savedAt: string;
+  sha256: string;
+  bytes: number;
 }
 
 export class RevisionConflictError extends Error {

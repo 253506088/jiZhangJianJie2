@@ -1,14 +1,19 @@
 apply plugin: 'com.android.application'
 
+def signingProperties = new Properties()
+def signingFile = rootProject.file('../.local/signing/release.properties')
+if (signingFile.exists()) signingFile.withInputStream { signingProperties.load(it) }
+
 android {
-    namespace = "dev.keepaccounts.preview"
+    namespace = "dev.keepaccounts.jianjie2"
     compileSdk = rootProject.ext.compileSdkVersion
+    buildToolsVersion = '36.1.0'
     defaultConfig {
-        applicationId "dev.keepaccounts.preview"
+        applicationId "dev.keepaccounts.jianjie2"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +21,22 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        projectKey {
+            if (signingFile.exists()) {
+                storeFile rootProject.file('../' + signingProperties['storeFile'])
+                storePassword signingProperties['storePassword']
+                keyAlias signingProperties['keyAlias']
+                keyPassword signingProperties['keyPassword']
+            }
+        }
+    }
     buildTypes {
+        debug {
+            if (signingFile.exists()) signingConfig signingConfigs.projectKey
+        }
         release {
+            signingConfig signingConfigs.projectKey
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
@@ -43,12 +62,3 @@ dependencies {
 }
 
 apply from: 'capacitor.build.gradle'
-
-try {
-    def servicesJSON = file('google-services.json')
-    if (servicesJSON.text) {
-        apply plugin: 'com.google.gms.google-services'
-    }
-} catch(Exception e) {
-    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
-}

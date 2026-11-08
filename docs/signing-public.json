@@ -1,0 +1,6 @@
+{
+  "appId": "dev.keepaccounts.jianjie2",
+  "alias": "jianjie-release",
+  "certificateSha256": "8a5a7549013e7e34af9b66cebee59b64ce71faf1b0bc1a36de11345258144511",
+  "note": "Public fingerprint only. The private key and passwords must stay in .local/signing or a secure user backup."
+}

@@ -1,8 +1,10 @@
-package dev.keepaccounts.preview;
+package dev.keepaccounts.jianjie2;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Base64;
+import android.util.Base64InputStream;
 
 import androidx.activity.result.ActivityResult;
 
@@ -30,7 +32,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/** User-initiated text export through the Storage Access Framework. No broad storage permission. */
+/** User-initiated UTF-8 or binary export through SAF. No broad storage permission. */
 @CapacitorPlugin(name = "LedgerFiles")
 public class LedgerFilesPlugin extends Plugin {
     private static final long MAX_BYTES = 96L * 1024L * 1024L;
@@ -44,12 +46,15 @@ public class LedgerFilesPlugin extends Plugin {
         final String content = call.getString("content");
         final String fileName = call.getString("fileName");
         final String mimeType = call.getString("mimeType", "application/json");
-        if (content == null || content.isEmpty() || content.length() > MAX_BYTES ||
+        final String encoding = call.getString("encoding", "utf8");
+        final boolean binary = "base64".equals(encoding);
+        if ((!binary && !"utf8".equals(encoding)) || content == null || content.isEmpty() ||
+                content.length() > (binary ? ((MAX_BYTES + 2) / 3) * 4 : MAX_BYTES) ||
                 !safeFileName(fileName)) {
             call.reject("导出内容或文件名无效。", "EXPORT_ARGUMENTS");
             return;
         }
-        if (!Arrays.asList("application/json", "application/octet-stream", "text/csv", "text/plain").contains(mimeType)) {
+        if (!Arrays.asList("application/json", "application/octet-stream", "text/csv", "text/plain", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet").contains(mimeType)) {
             call.reject("不支持这个导出文件类型。", "EXPORT_ARGUMENTS");
             return;
         }
@@ -67,10 +72,26 @@ public class LedgerFilesPlugin extends Plugin {
                 String token = UUID.randomUUID().toString();
                 staged = stageFile(token);
                 if (!staged.createNewFile()) throw new IOException("Staging collision");
-                try (FileOutputStream file = new FileOutputStream(staged);
-                     Writer writer = new OutputStreamWriter(new BoundedOutputStream(file), StandardCharsets.UTF_8)) {
-                    writer.write(content);
-                    writer.flush();
+                try (FileOutputStream file = new FileOutputStream(staged)) {
+                    if (binary) {
+                        long expected = checkedBase64Size(content);
+                        long decodedBytes = 0;
+                        try (InputStream decoded = new Base64InputStream(new AsciiStringInputStream(content), Base64.NO_WRAP)) {
+                            OutputStream bounded = new BoundedOutputStream(file);
+                            byte[] buffer = new byte[32 * 1024];
+                            int count;
+                            while ((count = decoded.read(buffer)) != -1) {
+                                bounded.write(buffer, 0, count);
+                                decodedBytes += count;
+                            }
+                            bounded.flush();
+                        }
+                        if (decodedBytes != expected) throw new IOException("Binary size mismatch");
+                    } else {
+                        try (Writer writer = new OutputStreamWriter(new BoundedOutputStream(file), StandardCharsets.UTF_8)) {
+                            writer.write(content);
+                        }
+                    }
                     file.getFD().sync();
                 }
                 call.getData().put(STAGE_KEY, token);
@@ -196,6 +217,35 @@ public class LedgerFilesPlugin extends Plugin {
         return true;
     }
 
+    private static long checkedBase64Size(String value) {
+        if (value.length() == 0 || value.length() % 4 != 0) throw new IllegalArgumentException("Invalid base64 size");
+        int padding = value.endsWith("==") ? 2 : value.endsWith("=") ? 1 : 0;
+        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        for (int index = 0; index < value.length() - padding; index++) {
+            if (alphabet.indexOf(value.charAt(index)) < 0) throw new IllegalArgumentException("Invalid base64 data");
+        }
+        int last = alphabet.indexOf(value.charAt(value.length() - padding - 1));
+        if ((padding == 2 && (last & 15) != 0) || (padding == 1 && (last & 3) != 0)) throw new IllegalArgumentException("Noncanonical base64");
+        long length = (long) value.length() / 4 * 3 - padding;
+        if (length == 0 || length > MAX_BYTES) throw new IllegalArgumentException("Binary export size limit");
+        return length;
+    }
+
+    private static final class AsciiStringInputStream extends InputStream {
+        private final String value;
+        private int position = 0;
+        AsciiStringInputStream(String value) { this.value = value; }
+        @Override public int read() { return position < value.length() ? value.charAt(position++) : -1; }
+        @Override public int read(byte[] buffer, int offset, int length) {
+            if (offset < 0 || length < 0 || offset > buffer.length - length) throw new IndexOutOfBoundsException();
+            if (length == 0) return 0;
+            if (position >= value.length()) return -1;
+            int count = Math.min(length, value.length() - position);
+            for (int index = 0; index < count; index++) buffer[offset + index] = (byte) value.charAt(position++);
+            return count;
+        }
+    }
+
     private File stageFile(String token) throws IOException {
         if (token == null || !token.matches(TOKEN_PATTERN)) throw new IOException("Invalid staging token");
         return new File(exportDirectory(), "backup-" + token + ".tmp");
@@ -237,6 +287,9 @@ public class LedgerFilesPlugin extends Plugin {
             out.write(buffer, offset, count);
             bytes += count;
         }
+
+        /** The outer FileOutputStream owns closing, so the encoder can finish before fsync. */
+        @Override public void close() throws IOException { flush(); }
     }
 
     @Override

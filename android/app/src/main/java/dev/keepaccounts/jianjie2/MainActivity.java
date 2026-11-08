@@ -1,4 +1,4 @@
-package dev.keepaccounts.preview;
+package dev.keepaccounts.jianjie2;
 
 import android.os.Bundle;
 import com.getcapacitor.BridgeActivity;
