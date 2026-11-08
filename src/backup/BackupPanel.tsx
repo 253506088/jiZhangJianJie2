@@ -244,7 +244,11 @@ export const BackupPanel = forwardRef<BackupPanelHandle, BackupPanelProps>(funct
       const text = await encodeBackup(state, encrypted ? { password } : {});
       if (!isCurrent()) return;
       setWorkLabel('请选择保存位置，完成后将校验文件…');
-      const result = await saveTextFile(text, backupFileName(encrypted));
+      const result = await saveTextFile(
+        text,
+        backupFileName(encrypted),
+        'application/octet-stream',
+      );
       if (!isCurrent()) return;
       setPassword('');
       setPasswordAgain('');
@@ -464,7 +468,7 @@ export const BackupPanel = forwardRef<BackupPanelHandle, BackupPanelProps>(funct
               ref={input}
               className="bk-hidden"
               type="file"
-              accept=".json,.jzbackup,application/json"
+              accept=".json,.jzbackup,application/json,application/octet-stream"
               disabled={busy}
               aria-label="选择完整备份文件"
               onChange={selectFile}

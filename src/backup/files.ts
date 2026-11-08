@@ -6,6 +6,7 @@ interface LedgerFilesPlugin {
     fileName: string;
     mimeType: string;
     content: string;
+    encoding?: 'utf8' | 'base64';
   }): Promise<{ cancelled: boolean }>;
 }
 
@@ -16,11 +17,79 @@ const allowedMimeTypes = new Set([
   'text/csv',
   'text/plain',
 ]);
+const allowedBinaryMimeTypes = new Set([
+  'application/octet-stream',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+]);
 
 export interface TextFileResult {
   cancelled: boolean;
   /** A browser download is requested; only the native result confirms a written document. */
   delivery: 'download' | 'document';
+}
+
+function checkedFileName(fileName: string) {
+  if (!fileName.trim() || fileName.length > 180 || /[\\/:*?"<>|\u0000-\u001f]/.test(fileName))
+    throw new Error('导出文件名不正确。');
+}
+
+function beginDownload(blob: Blob, fileName: string): TextFileResult {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  try {
+    anchor.href = url;
+    anchor.download = fileName;
+    anchor.hidden = true;
+    document.body.append(anchor);
+    anchor.click();
+  } catch {
+    URL.revokeObjectURL(url);
+    throw new Error('浏览器未能开始下载，请重试或使用安卓客户端导出。');
+  } finally {
+    anchor.remove();
+  }
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  return { cancelled: false, delivery: 'download' };
+}
+
+function toBase64(bytes: Uint8Array): string {
+  const pieces: string[] = [];
+  // Multiples of 3 keep padding limited to the final segment.
+  for (let offset = 0; offset < bytes.length; offset += 24_576)
+    pieces.push(btoa(String.fromCharCode(...bytes.subarray(offset, offset + 24_576))));
+  return pieces.join('');
+}
+
+export async function saveBinaryFile(
+  bytes: Uint8Array,
+  fileName: string,
+  mimeType = 'application/octet-stream',
+): Promise<TextFileResult> {
+  if (
+    !(bytes instanceof Uint8Array) ||
+    !bytes.byteLength ||
+    bytes.byteLength > MAX_BACKUP_FILE_BYTES
+  )
+    throw new Error('导出文件为空或超过 96 MiB 上限。');
+  checkedFileName(fileName);
+  if (!allowedBinaryMimeTypes.has(mimeType)) throw new Error('不支持这个二进制导出类型。');
+  const snapshot = new Uint8Array(bytes);
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const result = await nativeFiles.saveDocument({
+        fileName,
+        mimeType,
+        content: toBase64(snapshot),
+        encoding: 'base64',
+      });
+      if (typeof result.cancelled !== 'boolean') throw new Error('INVALID_NATIVE_RESULT');
+      return { cancelled: result.cancelled, delivery: 'document' };
+    } catch {
+      throw new Error('文件未保存成功。原账本未更改，请检查可用空间或选择其他保存位置后重试。');
+    }
+  }
+  return beginDownload(new Blob([snapshot], { type: mimeType }), fileName);
 }
 
 export function backupFileName(encrypted: boolean, now = new Date()): string {
@@ -36,8 +105,7 @@ export async function saveTextFile(
 ): Promise<TextFileResult> {
   if (!content || new TextEncoder().encode(content).byteLength > MAX_BACKUP_FILE_BYTES)
     throw new Error('导出文件为空或超过 96 MiB 上限。');
-  if (!fileName.trim() || fileName.length > 180 || /[\\/:*?"<>|\u0000-\u001f]/.test(fileName))
-    throw new Error('导出文件名不正确。');
+  checkedFileName(fileName);
   if (!allowedMimeTypes.has(mimeType)) throw new Error('不支持这个导出文件类型。');
 
   if (Capacitor.isNativePlatform()) {
@@ -50,23 +118,7 @@ export async function saveTextFile(
     }
   }
 
-  const url = URL.createObjectURL(new Blob([content], { type: `${mimeType};charset=utf-8` }));
-  const anchor = document.createElement('a');
-  try {
-    anchor.href = url;
-    anchor.download = fileName;
-    anchor.hidden = true;
-    document.body.append(anchor);
-    anchor.click();
-  } catch {
-    URL.revokeObjectURL(url);
-    throw new Error('浏览器未能开始下载，请重试或使用安卓客户端导出。');
-  } finally {
-    anchor.remove();
-  }
-  // Keep the Blob alive long enough for download handoff, without retaining it indefinitely.
-  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
-  return { cancelled: false, delivery: 'download' };
+  return beginDownload(new Blob([content], { type: `${mimeType};charset=utf-8` }), fileName);
 }
 
 export async function readBackupFile(file: File): Promise<string> {

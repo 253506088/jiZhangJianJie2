@@ -1,0 +1,424 @@
+.excel-export-panel {
+  --xe-page: #faf9f6;
+  --xe-card: #fffdf9;
+  --xe-text: #303b34;
+  --xe-muted: #738074;
+  --xe-line: #e3e7dd;
+  --xe-accent: #17b6ed;
+  --xe-soft: #e4f5fc;
+  --xe-button: #087da5;
+  width: min(670px, calc(100vw - 36px));
+  max-height: calc(100dvh - 36px);
+  padding: 0;
+  border: 1px solid var(--xe-line);
+  border-radius: 22px;
+  overflow: hidden;
+  color: var(--xe-text);
+  background: var(--xe-page);
+  box-shadow: 0 24px 90px #14251e36;
+  font-family: Inter, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+.excel-export-panel[open] {
+  display: flex;
+  flex-direction: column;
+}
+.excel-export-panel::backdrop {
+  background: #1d302567;
+  backdrop-filter: blur(4px);
+}
+.excel-export-panel[data-theme='dark'] {
+  color-scheme: dark;
+  --xe-page: #1f2923;
+  --xe-card: #2b372e;
+  --xe-text: #e7ece3;
+  --xe-muted: #adbaab;
+  --xe-line: #3a473c;
+}
+.excel-export-panel *,
+.excel-export-panel *::before,
+.excel-export-panel *::after {
+  box-sizing: border-box;
+}
+.excel-export-panel h1,
+.excel-export-panel h2,
+.excel-export-panel p,
+.excel-export-panel dl,
+.excel-export-panel dd {
+  margin: 0;
+}
+.excel-export-panel button,
+.excel-export-panel input,
+.excel-export-panel select {
+  font: inherit;
+}
+.excel-export-panel button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.excel-export-panel button:disabled {
+  opacity: 0.48;
+  cursor: default;
+}
+.excel-export-panel :focus-visible {
+  outline: 2px solid var(--xe-accent);
+  outline-offset: 3px;
+}
+.excel-export-panel svg {
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.xe-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 21px 24px;
+  border-bottom: 1px solid var(--xe-line);
+  background: var(--xe-card);
+  flex-shrink: 0;
+}
+.xe-icon {
+  width: 45px;
+  height: 46px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  background: var(--xe-soft);
+  color: var(--xe-button);
+}
+.excel-export-panel[data-theme='dark'] .xe-icon {
+  background: var(--xe-page);
+  color: var(--xe-accent);
+}
+.xe-header h1 {
+  font-size: 20px;
+  font-weight: 620;
+}
+.xe-header p {
+  font-size: 12px;
+  color: var(--xe-muted);
+  margin-top: 5px;
+}
+.xe-close {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  margin-left: auto;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--xe-muted);
+}
+.xe-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 22px 24px;
+}
+.xe-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--xe-muted);
+}
+.xe-field input,
+.xe-field select {
+  height: 44px;
+  min-width: 0;
+  width: 100%;
+  border: 1px solid var(--xe-line);
+  border-radius: 9px;
+  background: var(--xe-card);
+  color: var(--xe-text);
+  padding: 9px 11px;
+  font-size: 14px;
+}
+.xe-field input:disabled {
+  opacity: 0.5;
+}
+.xe-range {
+  margin-top: 21px;
+}
+.xe-check {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 14px;
+  min-height: 35px;
+  cursor: pointer;
+}
+.xe-check > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.xe-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--xe-button);
+}
+.xe-date-fields {
+  margin-top: 11px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+}
+.xe-help {
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--xe-muted);
+  margin-top: 9px !important;
+}
+.xe-formats {
+  border: 0;
+  margin: 22px 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+.xe-formats legend {
+  font-size: 12px;
+  color: var(--xe-muted);
+  margin-bottom: 9px;
+}
+.xe-formats > label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--xe-line);
+  border-radius: 11px;
+  padding: 14px 12px;
+  background: var(--xe-card);
+  cursor: pointer;
+}
+.xe-formats > label.selected {
+  border-color: var(--xe-accent);
+  box-shadow: inset 0 0 0 1px var(--xe-accent);
+}
+.xe-formats input {
+  margin: 0;
+  accent-color: var(--xe-button);
+}
+.xe-formats strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+}
+.xe-formats small {
+  display: block;
+  font-size: 10px;
+  color: var(--xe-muted);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+.xe-summary {
+  border: 1px solid var(--xe-line);
+  border-radius: 14px;
+  background: var(--xe-card);
+  padding: 17px;
+}
+.xe-summary header {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 17px;
+}
+.xe-summary h2 {
+  font-size: 15px;
+  font-weight: 600;
+}
+.xe-summary header > span {
+  font-size: 11px;
+  color: var(--xe-muted);
+}
+.xe-counts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+  padding-bottom: 17px;
+  border-bottom: 1px solid var(--xe-line);
+}
+.xe-counts dt {
+  font-size: 11px;
+  color: var(--xe-muted);
+}
+.xe-counts dd {
+  margin-top: 6px;
+  font-size: 21px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.xe-counts small {
+  font-size: 10px;
+  color: var(--xe-muted);
+  font-weight: 400;
+}
+.xe-amounts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px !important;
+}
+.xe-amounts > div {
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  font-size: 12px;
+}
+.xe-amounts dt {
+  color: var(--xe-muted);
+  flex-shrink: 0;
+}
+.xe-amounts dd {
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+.xe-boundary {
+  margin-top: 18px;
+  border-left: 3px solid var(--xe-accent);
+  border-radius: 3px 8px 8px 3px;
+  padding: 13px 15px;
+  background: var(--xe-card);
+}
+.xe-boundary strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+.xe-boundary p {
+  margin-top: 7px;
+  font-size: 11px;
+  line-height: 1.9;
+  color: var(--xe-muted);
+}
+.xe-error,
+.xe-notice {
+  margin-top: 15px !important;
+  padding: 12px 14px;
+  border-radius: 9px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.xe-error {
+  color: #a34737;
+  background: #f9e9e4;
+}
+.xe-notice {
+  color: #3d7654;
+  background: #e8f3ed;
+}
+.excel-export-panel[data-theme='dark'] .xe-error {
+  color: #efb19b;
+  background: #4b372d;
+}
+.excel-export-panel[data-theme='dark'] .xe-notice {
+  color: #b1d6bd;
+  background: #304b39;
+}
+.xe-footer {
+  background: var(--xe-card);
+  border-top: 1px solid var(--xe-line);
+  padding: 16px 24px 20px;
+  flex-shrink: 0;
+}
+.xe-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--xe-muted);
+  font-size: 12px;
+  line-height: 1.7;
+  margin-bottom: 11px;
+}
+.xe-progress svg {
+  animation: xe-spin 1s linear infinite;
+}
+@keyframes xe-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.xe-actions {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.xe-actions button {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  min-height: 46px;
+  padding: 12px 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.xe-secondary {
+  color: var(--xe-muted);
+  background: var(--xe-page);
+  border-color: var(--xe-line) !important;
+}
+.xe-primary {
+  flex: 1;
+  background: var(--xe-button);
+  color: white;
+  font-weight: 550;
+}
+@media (max-width: 620px) {
+  .excel-export-panel {
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: 100dvh;
+    inset: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .xe-header {
+    padding: 18px 17px;
+    gap: 10px;
+  }
+  .xe-header h1 {
+    font-size: 18px;
+  }
+  .xe-icon {
+    width: 41px;
+    height: 43px;
+  }
+  .xe-scroll {
+    padding: 19px 17px;
+  }
+  .xe-summary {
+    padding: 15px;
+  }
+  .xe-formats {
+    gap: 8px;
+  }
+  .xe-formats > label {
+    padding: 13px 10px;
+    gap: 8px;
+  }
+  .xe-formats small {
+    font-size: 10px;
+  }
+  .xe-footer {
+    padding: 14px 17px 16px;
+  }
+  .xe-actions button {
+    min-height: 48px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .xe-progress svg {
+    animation: none;
+  }
+}
