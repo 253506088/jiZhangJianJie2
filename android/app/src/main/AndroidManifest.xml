@@ -35,7 +35,5 @@
         </provider>
     </application>
 
-    <!-- Permissions -->
-
-    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Local assets, private SQLite and user-selected documents require no network permission. -->
 </manifest>
