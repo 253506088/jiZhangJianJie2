@@ -1,313 +1,315 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
-import { createDemoEntries, saveEntry, todayLocal, type Entry } from './domain/ledger';
-import { Icon } from './components/Icon';
-import { ConfirmDialog, type Confirmation } from './components/ConfirmDialog';
-import { HomePage } from './pages/HomePage';
-import { EntryEditor } from './pages/EntryEditor';
-import { AccountsPage, DataPage, DetailsPage, ReportsPage } from './pages/LedgerPages';
+import { App as NativeApp } from '@capacitor/app';
+import { BookOpen, LoaderCircle, ShieldAlert } from 'lucide-react';
+import { createEmptyState, type LedgerState } from './core';
+import { createRepository, type LedgerRepository, type LoadedLedger } from './storage/repository';
+import { RevisionConflictError } from './storage/types';
+import { ProductionApp, type ProductionAppHandle, type LedgerMutation } from './ui';
+import { ImportWizard, type ImportWizardHandle } from './imports/ImportWizard';
+import { applyImport, type ImportResult } from './imports/apply';
+import type { ImportOptions, ImportPlan } from './imports/types';
+import { BackupPanel, type BackupPanelHandle, saveTextFile } from './backup';
+import { RecoveryPanel, type RecoveryPanelHandle } from './workflows/RecoveryPanel';
+import { ExcelExportPanel, type ExcelExportPanelHandle } from './exports/ExcelExportPanel';
 
-export type Screen = 'home' | 'entry' | 'details' | 'accounts' | 'reports' | 'data';
-const pageTitles: Record<Screen, string> = {
-  home: '首页',
-  entry: '记一笔',
-  details: '收支明细',
-  accounts: '我的账户',
-  reports: '收支报表',
-  data: '数据与设置',
-};
+type Panel = 'import' | 'export' | 'excel-export' | 'restore' | 'history' | null;
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>('home');
-  const [entries, setEntries] = useState<Entry[]>(() => createDemoEntries());
-  const [editing, setEditing] = useState<Entry | null>(null);
-  const [month, setMonth] = useState(todayLocal().slice(0, 7));
-  const [accountFilter, setAccountFilter] = useState<string | null>(null);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [toast, setToast] = useState('');
-  const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
-  const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const notify = (message: string) => {
-    if (toastTimeout.current) clearTimeout(toastTimeout.current);
-    setToast(message);
-    toastTimeout.current = setTimeout(() => setToast(''), 3300);
-  };
-  useEffect(
-    () => () => {
-      if (toastTimeout.current) clearTimeout(toastTimeout.current);
+  const [loaded, setLoaded] = useState<LoadedLedger | null>(null);
+  const [bootError, setBootError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [panel, setPanel] = useState<Panel>(null);
+  const [notice, setNotice] = useState<{ message: string; serial: number } | null>(null);
+  const repository = useRef<LedgerRepository | null>(null);
+  const writing = useRef(false);
+  const busyRef = useRef(false);
+  const panelRef = useRef<Panel>(null);
+  const app = useRef<ProductionAppHandle>(null);
+  const importer = useRef<ImportWizardHandle>(null);
+  const backup = useRef<BackupPanelHandle>(null);
+  const recovery = useRef<RecoveryPanelHandle>(null);
+  const excelExport = useRef<ExcelExportPanelHandle>(null);
+  const unavailableShell = useMemo(() => createEmptyState(), []);
+  panelRef.current = panel;
+  busyRef.current = busy;
+
+  const notify = useCallback((message: string) => {
+    setNotice((current) => ({ message, serial: (current?.serial ?? 0) + 1 }));
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const store = createRepository();
+    repository.current = store;
+    store
+      .load()
+      .then((value) => {
+        if (active) {
+          setLoaded(value);
+          setBootError('');
+        }
+      })
+      .catch((cause) => {
+        if (active)
+          setBootError(
+            cause instanceof Error ? cause.message : '本地账本无法读取，原数据未被删除。',
+          );
+      });
+    return () => {
+      active = false;
+      if (repository.current === store) repository.current = null;
+      void store.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!notice) return;
+    const timer = setTimeout(() => setNotice(null), 4200);
+    return () => clearTimeout(timer);
+  }, [notice]);
+
+  const closePanel = useCallback(() => {
+    if (writing.current) return;
+    setPanel(null);
+  }, []);
+
+  useEffect(() => {
+    const back = () => {
+      if (writing.current || busyRef.current) return true;
+      if (panelRef.current === 'import') {
+        importer.current?.requestClose();
+        return true;
+      }
+      if (panelRef.current === 'export' || panelRef.current === 'restore') {
+        backup.current?.requestClose();
+        return true;
+      }
+      if (panelRef.current === 'history') {
+        recovery.current?.requestClose();
+        return true;
+      }
+      if (panelRef.current === 'excel-export') {
+        excelExport.current?.requestClose();
+        return true;
+      }
+      return app.current?.back() ?? false;
+    };
+    const listener = Capacitor.isNativePlatform()
+      ? NativeApp.addListener('backButton', () => {
+          if (!back()) void NativeApp.exitApp();
+        })
+      : null;
+    const onKey = (event: KeyboardEvent) => {
+      if (
+        event.key === 'Escape' &&
+        !panelRef.current &&
+        !document.querySelector('dialog[open]') &&
+        back()
+      )
+        event.preventDefault();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      if (listener) void listener.then((handle) => handle.remove());
+    };
+  }, []);
+
+  const mutate = useCallback(async (operation: LedgerMutation) => {
+    if (!repository.current) throw new Error('账本尚未加载完成。');
+    if (writing.current) throw new Error('上一项保存仍在进行，请稍候。');
+    writing.current = true;
+    setBusy(true);
+    try {
+      const value = await repository.current.mutate(operation);
+      setLoaded(value);
+      setBootError('');
+    } catch (cause) {
+      if (cause instanceof RevisionConflictError) {
+        try {
+          setLoaded(await repository.current.load());
+        } catch {
+          /* Original files remain available for recovery. */
+        }
+      }
+      throw cause;
+    } finally {
+      writing.current = false;
+      setBusy(false);
+    }
+  }, []);
+
+  const apply = useCallback(
+    async (plan: ImportPlan, options: ImportOptions) => {
+      let result: ImportResult | undefined;
+      await mutate((state) => {
+        result = applyImport(state, plan, options);
+        if (!result.added)
+          throw new Error('这些来源行已经导入，或全部在选择范围之外，没有新增记录。');
+        return result.state;
+      });
+      return result!;
     },
-    [],
+    [mutate],
   );
-  const navigate = (next: Screen) => {
-    setEditing(null);
-    setAccountFilter(null);
-    setScreen(next);
+
+  const restore = useCallback(
+    async (state: LedgerState) => {
+      if (!repository.current || writing.current) throw new Error('当前还不能恢复，请稍候。');
+      writing.current = true;
+      setBusy(true);
+      try {
+        const value = await repository.current.restoreFromBackup(state);
+        setLoaded(value);
+        setBootError('');
+        notify('完整备份已恢复，分类与流水关系已核对');
+      } finally {
+        writing.current = false;
+        setBusy(false);
+      }
+    },
+    [notify],
+  );
+
+  const reload = async () => {
+    if (!repository.current || writing.current) return;
+    setBootError('');
+    try {
+      setLoaded(await repository.current.load());
+    } catch (cause) {
+      setBootError(cause instanceof Error ? cause.message : '重新读取失败');
+    }
   };
-  const editEntry = (entry: Entry) => {
-    setEditing(entry);
-    setScreen('entry');
-  };
-  const native = Capacitor.isNativePlatform();
+
+  const state = loaded?.state ?? unavailableShell;
+  const latestImports = loaded
+    ? [...loaded.state.imports]
+        .sort((a, b) => b.importedAt.localeCompare(a.importedAt))
+        .slice(0, 10)
+    : [];
   return (
-    <main className={`preview-workspace ${native ? 'native-workspace' : ''}`}>
-      <aside className="preview-intro">
-        <a
-          className="preview-wordmark"
-          href="#"
-          onClick={(event) => {
-            event.preventDefault();
-            navigate('home');
+    <div
+      className="app-root"
+      data-theme={state.settings.theme}
+      data-accent={state.settings.accentColor}
+    >
+      {loaded ? (
+        <ProductionApp
+          ref={app}
+          state={loaded.state}
+          busy={busy}
+          mutate={mutate}
+          onImport={() => setPanel('import')}
+          onExport={() => setPanel('export')}
+          onExcelExport={() => setPanel('excel-export')}
+          onRestore={() => setPanel('restore')}
+          onHistory={() => setPanel('history')}
+          dataTools={
+            <section className="root-data-status">
+              <p>数据保存在本机。最近保存：{new Date(loaded.savedAt).toLocaleString('zh-CN')}。</p>
+              {latestImports.length > 0 && (
+                <>
+                  <h3>最近导入</h3>
+                  <ul className="root-import-list">
+                    {latestImports.map((batch) => (
+                      <li key={batch.id}>
+                        <strong>{batch.fileName}</strong>
+                        <span>
+                          {new Date(batch.importedAt).toLocaleString('zh-CN')} · 新增{' '}
+                          {batch.importedRows} 笔 · 跳过 {batch.skippedRows} 行 · 未导入{' '}
+                          {batch.rejectedRows} 行
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </section>
+          }
+        />
+      ) : (
+        <main className="root-boot">
+          {bootError ? (
+            <>
+              <ShieldAlert size={42} />
+              <h1>账本暂时无法打开</h1>
+              <p role="alert">{bootError}</p>
+              <div className="root-actions">
+                <button onClick={() => void reload()}>重新读取</button>
+                <button onClick={() => setPanel('history')}>历史保存点</button>
+                <button onClick={() => setPanel('restore')}>从完整备份恢复</button>
+              </div>
+              <p>现有数据会保留，不会自动创建空账本覆盖它。</p>
+            </>
+          ) : (
+            <>
+              <BookOpen size={44} />
+              <h1>简洁记账</h1>
+              <p className="root-loading">
+                <LoaderCircle className="import-spin" size={18} />
+                正在打开本地账本…
+              </p>
+            </>
+          )}
+        </main>
+      )}
+      {panel === 'import' && loaded && (
+        <ImportWizard
+          ref={importer}
+          state={loaded.state}
+          onClose={closePanel}
+          onApply={apply}
+          onSaveReport={(content, fileName) => saveTextFile(content, fileName, 'text/csv')}
+          onComplete={(result) => {
+            closePanel();
+            app.current?.showTransactions({
+              month: result.latestDate?.slice(0, 7),
+              bookId: result.firstBookId,
+            });
+            notify('已导入 ' + result.added + ' 笔，分类可直接用于继续记账');
           }}
-        >
-          <span>
-            <Icon name="book" size={21} />
-          </span>
-          简洁记账<small>重制预览</small>
-        </a>
-        <div className="edition-label">
-          <span />
-          INTERFACE STUDY · 01
+        />
+      )}
+      {(panel === 'export' || panel === 'restore') && (
+        <BackupPanel
+          ref={backup}
+          mode={panel}
+          state={state}
+          currentUnavailable={!loaded}
+          onClose={closePanel}
+          onRestore={restore}
+          onSaved={() =>
+            notify(
+              Capacitor.isNativePlatform()
+                ? '备份文件已保存'
+                : '已发起备份下载，请确认浏览器下载结果',
+            )
+          }
+        />
+      )}
+      {panel === 'excel-export' && loaded && (
+        <ExcelExportPanel ref={excelExport} state={loaded.state} onClose={closePanel} />
+      )}
+      {panel === 'history' && repository.current && (
+        <RecoveryPanel
+          ref={recovery}
+          repository={repository.current}
+          theme={state.settings.theme}
+          onClose={closePanel}
+          onRestored={(value) => {
+            setLoaded(value);
+            setBootError('');
+            closePanel();
+            notify('已恢复历史保存点');
+          }}
+        />
+      )}
+      {notice && (
+        <div className="root-notice" role="status">
+          {notice.message}
         </div>
-        <h1>
-          熟悉的习惯。
-          <br />
-          <em>更轻盈的日常。</em>
-        </h1>
-        <p className="intro-description">
-          保留你顺手的两级分类与记账路径，
-          <br />
-          让每一笔日常，都清楚而从容。
-        </p>
-        <div className="intro-divider" />
-        <h2>点击体验</h2>
-        <nav className="preview-navigation" aria-label="预览页面">
-          {(
-            [
-              { id: 'home', label: '首页概览', icon: 'home' },
-              { id: 'entry', label: '记一笔', icon: 'plus' },
-              { id: 'details', label: '收支明细', icon: 'list' },
-              { id: 'reports', label: '分类报表', icon: 'chart' },
-            ] as const
-          ).map((item) => (
-            <button
-              key={item.id}
-              className={screen === item.id ? 'selected' : ''}
-              onClick={() => navigate(item.id)}
-            >
-              <Icon name={item.icon} size={18} />
-              {item.label}
-              <Icon name="right" size={15} />
-            </button>
-          ))}
-        </nav>
-        <div className="preview-theme">
-          <span>换一种光线</span>
-          <button
-            aria-label="预览暖白主题"
-            aria-pressed={theme === 'light'}
-            className={`theme-dot light ${theme === 'light' ? 'selected' : ''}`}
-            onClick={() => setTheme('light')}
-          />
-          <button
-            aria-label="预览夜间主题"
-            aria-pressed={theme === 'dark'}
-            className={`theme-dot dark ${theme === 'dark' ? 'selected' : ''}`}
-            onClick={() => setTheme('dark')}
-          />
-        </div>
-        <p className="stack-caption">
-          React + TypeScript + Capacitor
-          <br />
-          <span>同一套界面，可扩展为 Android 与 Web</span>
-        </p>
-      </aside>
-      <div className="device-stage">
-        <div className="device-caption">
-          <span className="status-dot" />
-          可操作预览<span>移动端界面</span>
-        </div>
-        <div className="device-frame">
-          <div className="app-shell" data-theme={theme}>
-            <div className="mobile-status">
-              <span>简洁记账</span>
-              <span>
-                演示预览
-                <Icon name="book" size={11} />
-              </span>
-            </div>
-            {screen !== 'home' && screen !== 'entry' && (
-              <header className="page-header">
-                <button
-                  className="icon-button"
-                  aria-label="返回首页"
-                  onClick={() => navigate('home')}
-                >
-                  <Icon name="left" />
-                </button>
-                <h1>{pageTitles[screen]}</h1>
-                <span className="header-spacer" />
-              </header>
-            )}
-            {screen === 'home' && (
-              <HomePage
-                entries={entries}
-                month={month}
-                onMonth={setMonth}
-                navigate={navigate}
-                onEdit={editEntry}
-              />
-            )}
-            {screen === 'entry' && (
-              <EntryEditor
-                key={editing?.id ?? 'new'}
-                initial={editing}
-                onCancel={() => navigate(editing ? 'details' : 'home')}
-                onSave={(entry, again) => {
-                  setEntries((items) => saveEntry(items, entry));
-                  setMonth(entry.date.slice(0, 7));
-                  notify(again ? '记好了，继续下一笔' : '已保存这笔账目');
-                  if (!again) navigate(editing ? 'details' : 'home');
-                }}
-                onDelete={(entry) =>
-                  setConfirmation({
-                    title: '删除这笔演示账目？',
-                    message: '删除后，本月统计和账户余额会同步更新。',
-                    confirmLabel: '删除',
-                    onConfirm: () => {
-                      setEntries((items) => items.filter((item) => item.id !== entry.id));
-                      navigate('details');
-                      notify('已删除');
-                    },
-                  })
-                }
-              />
-            )}
-            {screen === 'details' && (
-              <DetailsPage
-                entries={entries}
-                month={month}
-                onMonth={setMonth}
-                onEdit={editEntry}
-                accountId={accountFilter}
-                onClearAccount={() => setAccountFilter(null)}
-              />
-            )}
-            {screen === 'reports' && (
-              <ReportsPage entries={entries} month={month} onMonth={setMonth} />
-            )}
-            {screen === 'accounts' && (
-              <AccountsPage
-                entries={entries}
-                onSelect={(id) => {
-                  setAccountFilter(id);
-                  setScreen('details');
-                }}
-              />
-            )}
-            {screen === 'data' && (
-              <DataPage
-                entries={entries}
-                theme={theme}
-                onTheme={setTheme}
-                notify={notify}
-                onRestore={(items) =>
-                  setConfirmation({
-                    title: '恢复演示备份？',
-                    message: `将用备份中的 ${items.length} 笔虚构记录替换当前演示账目，不会重复叠加。`,
-                    confirmLabel: '恢复',
-                    onConfirm: () => {
-                      setEntries(items);
-                      setMonth(items[0]?.date.slice(0, 7) ?? todayLocal().slice(0, 7));
-                      notify('演示备份已恢复');
-                    },
-                  })
-                }
-                onReset={() =>
-                  setConfirmation({
-                    title: '重新开始体验？',
-                    message: '将恢复最初的虚构账目，清除本次预览中的修改。',
-                    confirmLabel: '恢复示例',
-                    onConfirm: () => {
-                      setEntries(createDemoEntries());
-                      setMonth(todayLocal().slice(0, 7));
-                      notify('演示账目已恢复');
-                    },
-                  })
-                }
-              />
-            )}
-            <div className={`toast ${toast ? 'visible' : ''}`} role="status" aria-live="polite">
-              <Icon name="check" size={16} />
-              {toast}
-            </div>
-            <ConfirmDialog value={confirmation} onClose={() => setConfirmation(null)} />
-          </div>
-        </div>
-        <div className="device-bottom-caption">全部为虚构数据 · 可以放心点选</div>
-      </div>
-      <aside className="preview-notes">
-        <span className="annotation-index">A LITTLE MORE FAMILIAR</span>
-        <h2>
-          顺手的部分，
-          <br />
-          留下来。
-        </h2>
-        <div className="habit-note">
-          <span>01</span>
-          <div>
-            <strong>还是熟悉的两级分类</strong>
-            <p>
-              左边选大类，右边选细项。
-              <br />
-              分类路径始终看得见。
-            </p>
-          </div>
-        </div>
-        <div className="habit-note">
-          <span>02</span>
-          <div>
-            <strong>算一算，直接记下来</strong>
-            <p>
-              数字键盘支持加减，
-              <br />
-              不用离开记账页面。
-            </p>
-          </div>
-        </div>
-        <div className="habit-note">
-          <span>03</span>
-          <div>
-            <strong>保存，或者再记一笔</strong>
-            <p>
-              连续记账时保留所选分类，
-              <br />
-              少一些来回，多一点顺手。
-            </p>
-          </div>
-        </div>
-        <div className="try-card">
-          <span className="try-icon">
-            <Icon name="plus" size={18} />
-          </span>
-          <strong>现在试记一笔</strong>
-          <p>
-            选择「餐饮 → 早餐」，输入 12.5，
-            <br />
-            保存后看看首页和报表的变化。
-          </p>
-          <button onClick={() => navigate('entry')}>
-            开始体验
-            <Icon name="right" size={15} />
-          </button>
-        </div>
-        <p className="fidelity-note">
-          布局参考已提取的旧版资源。
-          <br />
-          这是可交互的设计稿，细节仍可调整，
-          <br />
-          尚未验证与旧版行为完全一致。
-        </p>
-      </aside>
-    </main>
+      )}
+    </div>
   );
 }

@@ -162,14 +162,25 @@ export class LedgerRepository {
     await this.queue;
     const headers = this.storage.historyHeaders
       ? await this.storage.historyHeaders()
-      : (await this.storage.history()).map(({revision,savedAt,sha256,data})=>({revision,savedAt,sha256,bytes:new TextEncoder().encode(data).byteLength}));
-    return headers.filter(header=>Number.isSafeInteger(header.revision) && header.revision>0 && Number.isFinite(Date.parse(header.savedAt)) && /^[a-f0-9]{64}$/.test(header.sha256));
+      : (await this.storage.history()).map(({ revision, savedAt, sha256, data }) => ({
+          revision,
+          savedAt,
+          sha256,
+          bytes: new TextEncoder().encode(data).byteLength,
+        }));
+    return headers.filter(
+      (header) =>
+        Number.isSafeInteger(header.revision) &&
+        header.revision > 0 &&
+        Number.isFinite(Date.parse(header.savedAt)) &&
+        /^[a-f0-9]{64}$/.test(header.sha256),
+    );
   }
 
   private async historySnapshot(revision: number) {
     return this.storage.readHistory
       ? this.storage.readHistory(revision)
-      : (await this.storage.history()).find(snapshot=>snapshot.revision===revision) ?? null;
+      : ((await this.storage.history()).find((snapshot) => snapshot.revision === revision) ?? null);
   }
 
   async inspectRecovery(revision: number): Promise<LoadedLedger> {

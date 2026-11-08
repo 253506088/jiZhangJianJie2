@@ -76,7 +76,8 @@ export function readWorkbookBytes(
     if (range.e.r >= MAX_PHYSICAL_ROWS || range.e.c >= MAX_COLUMNS)
       throw new Error('工作表超过 20 万行或 256 列，请分批导出。');
     totalRows += range.e.r + 1;
-    if (totalRows > MAX_PHYSICAL_ROWS) throw new Error('整个文件超过记录与表头规模上限，请分批导出。');
+    if (totalRows > MAX_PHYSICAL_ROWS)
+      throw new Error('整个文件超过记录与表头规模上限，请分批导出。');
     const rows: CellValue[][] = [];
     for (let row = 0; row <= range.e.r; row++) {
       const cells: CellValue[] = [];

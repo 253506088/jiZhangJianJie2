@@ -1,0 +1,2430 @@
+.ledger-app {
+  --lj-page: #faf9f6;
+  --lj-surface: #fffdf9;
+  --lj-card: #ffffff;
+  --lj-text: #303b34;
+  --lj-muted: #7c877d;
+  --lj-secondary: #637065;
+  --lj-line: #e9ece3;
+  --lj-quiet: #f2f3ed;
+  --lj-accent: #de856d;
+  --lj-accent-text: #b85942;
+  --lj-accent-soft: #fbeddf;
+  --lj-green: #528a6c;
+  --lj-green-soft: #eaf3ed;
+  --lj-danger: #b74e42;
+  --lj-shadow: 0 10px 38px #3345270b;
+  height: 100dvh;
+  min-height: 0;
+  max-width: 1160px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 244px minmax(0, 1fr);
+  overflow: hidden;
+  background: var(--lj-page);
+  color: var(--lj-text);
+  font-family: Inter, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-sizing: border-box;
+}
+.ledger-app[data-theme='dark'] {
+  color-scheme: dark;
+  --lj-page: #1f2923;
+  --lj-surface: #27322b;
+  --lj-card: #2d3930;
+  --lj-text: #e7ece3;
+  --lj-muted: #9da99d;
+  --lj-secondary: #bdc8ba;
+  --lj-line: #3a473c;
+  --lj-quiet: #303d32;
+  --lj-accent: #dea18b;
+  --lj-accent-text: #efb29b;
+  --lj-accent-soft: #493c31;
+  --lj-green: #97c0a3;
+  --lj-green-soft: #314736;
+  --lj-danger: #efa398;
+}
+.ledger-app *,
+.lj-modal * {
+  box-sizing: border-box;
+}
+.ledger-app h1,
+.ledger-app h2,
+.ledger-app h3,
+.ledger-app p,
+.lj-modal h2,
+.lj-modal p {
+  margin: 0;
+}
+.ledger-app button,
+.ledger-app input,
+.ledger-app select,
+.ledger-app textarea,
+.lj-modal button,
+.lj-modal input,
+.lj-modal select {
+  font: inherit;
+}
+.ledger-app button,
+.lj-modal button {
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.ledger-app button:disabled,
+.lj-modal button:disabled {
+  opacity: 0.43;
+  cursor: default;
+}
+.ledger-app input,
+.ledger-app select,
+.ledger-app textarea,
+.lj-modal input,
+.lj-modal select {
+  min-width: 0;
+}
+.ledger-app svg {
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.ledger-app :focus-visible,
+.lj-modal :focus-visible {
+  outline: 2px solid var(--lj-accent);
+  outline-offset: 3px;
+}
+.lj-main:focus {
+  outline: 0;
+}
+.lj-skip-link {
+  position: absolute;
+  top: -60px;
+  left: 10px;
+  z-index: 100;
+  padding: 10px 15px;
+  color: var(--lj-text);
+  background: var(--lj-card);
+  border-radius: 6px;
+}
+.lj-skip-link:focus {
+  top: 10px;
+}
+.lj-sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 30px 22px;
+  border-right: 1px solid var(--lj-line);
+  background: var(--lj-surface);
+}
+.lj-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 0 0 28px;
+}
+.lj-sidebar-brand strong {
+  display: block;
+  font-size: 20px;
+  letter-spacing: 1px;
+  font-weight: 620;
+}
+.lj-sidebar-brand small {
+  display: block;
+  color: var(--lj-muted);
+  font-size: 11px;
+  margin-top: 4px;
+}
+.lj-brand-mark {
+  width: 46px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--lj-accent-soft);
+  color: var(--lj-accent-text);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.lj-sidebar-book {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 1px;
+  margin-bottom: 13px;
+  gap: 8px;
+  font-size: 14px !important;
+  border-bottom: 1px solid var(--lj-line) !important;
+  text-align: left;
+}
+.lj-sidebar-book span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lj-sidebar > .lj-primary {
+  width: 100%;
+}
+.lj-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 23px;
+}
+.lj-sidebar nav button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 12px;
+  font-size: 14px;
+  border-radius: 9px;
+  text-align: left;
+  color: var(--lj-secondary);
+}
+.lj-sidebar nav button.selected {
+  color: var(--lj-accent-text);
+  background: var(--lj-accent-soft);
+  font-weight: 560;
+}
+.lj-sidebar nav button:hover:not(:disabled):not(.selected) {
+  background: var(--lj-quiet);
+}
+.lj-sidebar-footer {
+  margin-top: auto;
+  padding: 28px 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--lj-muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+.lj-sidebar-footer small {
+  font-size: 10px;
+}
+.lj-main {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+.lj-route-frame {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.lj-route-frame[hidden] {
+  display: none !important;
+}
+.lj-screen {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.lj-scroll {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--lj-line) transparent;
+}
+.lj-page-pad {
+  padding: 12px 30px 35px;
+}
+.lj-header {
+  height: 65px;
+  min-height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  gap: 12px;
+  background: var(--lj-surface);
+  border-bottom: 1px solid var(--lj-line);
+}
+.lj-header h1 {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  margin-right: auto;
+}
+.lj-header-action {
+  min-width: 36px;
+  display: flex;
+  justify-content: flex-end;
+}
+.lj-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: var(--lj-secondary);
+  padding: 0;
+  flex-shrink: 0;
+}
+.lj-icon-button:hover:not(:disabled) {
+  background: var(--lj-quiet);
+}
+.lj-text-button {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 0;
+  font-size: 13px !important;
+  color: var(--lj-accent-text) !important;
+}
+.lj-text-button:hover:not(:disabled) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.lj-primary,
+.lj-secondary {
+  min-height: 47px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 18px;
+  font-size: 14px !important;
+  font-weight: 550 !important;
+  border-radius: 10px !important;
+  transition:
+    filter 0.16s,
+    transform 0.16s;
+}
+.ledger-app .lj-primary,
+.lj-modal .lj-primary {
+  background: var(--lj-accent);
+  color: #fff;
+}
+.ledger-app .lj-secondary,
+.lj-modal .lj-secondary {
+  background: var(--lj-card);
+  color: var(--lj-secondary);
+  border: 1px solid var(--lj-line);
+}
+.lj-primary:hover:not(:disabled),
+.lj-secondary:hover:not(:disabled) {
+  filter: brightness(0.98);
+}
+.lj-primary:active:not(:disabled),
+.lj-secondary:active:not(:disabled) {
+  transform: scale(0.985);
+}
+.lj-income {
+  color: var(--lj-green) !important;
+}
+.lj-expense {
+  color: var(--lj-accent-text) !important;
+}
+.lj-danger-text {
+  color: var(--lj-danger) !important;
+}
+.lj-danger-button {
+  background: var(--lj-danger) !important;
+}
+.lj-home {
+  background: var(--lj-surface);
+}
+.lj-home-header {
+  display: flex;
+  align-items: center;
+  padding: 26px 34px 9px;
+  gap: 13px;
+}
+.lj-home-header h1 {
+  font-size: 23px;
+  font-weight: 650;
+  line-height: 1.5;
+  letter-spacing: 1px;
+}
+.lj-home-header > .lj-icon-button {
+  margin-left: auto;
+}
+.lj-book-switch {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--lj-secondary) !important;
+  font-size: 13px !important;
+  min-height: 30px;
+  padding: 2px 0;
+  max-width: 265px;
+  text-align: left;
+}
+.lj-overview {
+  padding: 0 34px;
+  max-width: 760px;
+  margin: auto;
+}
+.lj-month-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 54px;
+  padding: 4px 0;
+}
+.lj-month-picker > label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  min-height: 42px;
+}
+.lj-month-picker input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.lj-month-picker input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.lj-month-picker .lj-icon-button {
+  width: 34px;
+  height: 36px;
+  color: var(--lj-muted);
+}
+.lj-month-picker > .lj-text-button {
+  font-size: 11px !important;
+  padding-left: 9px;
+}
+.lj-balance-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(14px, 4vw, 50px);
+  max-width: 530px;
+  margin: auto;
+  padding: 0 0 5px;
+}
+.lj-spending-ring {
+  width: 100%;
+  aspect-ratio: 1;
+  position: relative;
+}
+.lj-spending-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.lj-spending-ring circle {
+  fill: none;
+  stroke-width: 7px;
+}
+.lj-ring-track {
+  stroke: var(--lj-accent-soft);
+}
+.lj-ring-value {
+  stroke: var(--lj-accent);
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.35s;
+}
+.lj-ring-value.over {
+  stroke: var(--lj-danger);
+}
+.lj-spending-ring > div {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 11px;
+  text-align: center;
+}
+.lj-spending-ring span {
+  font-size: 13px;
+  color: var(--lj-secondary);
+  letter-spacing: 0.5px;
+}
+.lj-spending-ring strong {
+  font-size: clamp(26px, 2.8vw, 35px);
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 500;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+  max-width: 85%;
+  overflow-wrap: anywhere;
+  line-height: 1.05;
+}
+.lj-spending-ring small {
+  font-size: 15px;
+  color: var(--lj-secondary);
+  margin-right: 3px;
+}
+.lj-spending-ring em {
+  font-size: 10px;
+  color: var(--lj-muted);
+  font-style: normal;
+}
+.lj-month-statistics {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.lj-month-statistics > div {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.lj-month-statistics > div:last-child {
+  padding-top: 14px;
+  border-top: 1px solid var(--lj-line);
+}
+.lj-month-statistics span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--lj-muted);
+  font-size: 12px;
+}
+.lj-month-statistics strong {
+  font-size: 21px;
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.lj-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+.lj-dot.income {
+  background: var(--lj-green);
+}
+.lj-dot.expense {
+  background: var(--lj-accent);
+}
+.lj-budget-summary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--lj-line) !important;
+  color: var(--lj-muted) !important;
+  padding: 12px 2px 15px;
+  font-size: 12px !important;
+  min-height: 43px;
+}
+.lj-add-entry {
+  width: calc(100% - 68px);
+  min-height: 72px;
+  display: flex;
+  margin: 23px 34px 0;
+  padding: 0 23px;
+  border-radius: 14px !important;
+  box-shadow: 0 7px 20px #e08a7026;
+  justify-content: flex-start;
+}
+.lj-add-entry > span {
+  height: 36px;
+  width: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #fff8;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+.lj-add-entry > div {
+  font-size: 18px;
+  line-height: 1.55;
+  letter-spacing: 1.5px;
+  text-align: left;
+}
+.lj-add-entry small {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.84;
+  letter-spacing: 0.5px;
+}
+.lj-add-entry > svg {
+  margin-left: auto;
+  opacity: 0.85;
+}
+.lj-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 27px 32px 24px;
+}
+.lj-quick-actions > button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  font-size: 13px;
+  min-height: 79px;
+  color: var(--lj-secondary);
+}
+.lj-quick-actions > button > span {
+  width: 49px;
+  height: 49px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  transition: transform 0.2s;
+}
+.lj-quick-actions > button:hover > span {
+  transform: translateY(-2px);
+}
+.lj-quick-actions .sage {
+  background: #edf3e9;
+  color: #78936f;
+}
+.lj-quick-actions .blue {
+  background: #eaf1f5;
+  color: #7594a5;
+}
+.lj-quick-actions .sand {
+  background: #f5efdf;
+  color: #aa925f;
+}
+.lj-quick-actions .lavender {
+  background: #f0eaf4;
+  color: #9a82a9;
+}
+[data-theme='dark'] .lj-quick-actions > button > span {
+  background: var(--lj-quiet);
+}
+.lj-welcome-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  background: var(--lj-green-soft);
+  border: 1px solid var(--lj-line);
+  border-radius: 13px;
+  margin: 3px 34px 26px;
+  padding: 19px;
+}
+.lj-welcome-icon {
+  color: var(--lj-green);
+  margin-top: 2px;
+}
+.lj-welcome-card h2 {
+  font-size: 15px;
+  font-weight: 550;
+}
+.lj-welcome-card p {
+  font-size: 12px;
+  line-height: 1.85;
+  color: var(--lj-secondary);
+  margin-top: 6px;
+}
+.lj-welcome-card .lj-text-button {
+  color: var(--lj-green) !important;
+  padding-bottom: 0;
+}
+.lj-recent {
+  padding: 19px 34px 0;
+  border-top: 7px solid var(--lj-page);
+}
+.lj-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin: 13px 0;
+}
+.lj-section-heading h2 {
+  font-size: 15px;
+  font-weight: 600;
+}
+.lj-section-heading > span {
+  color: var(--lj-muted);
+  font-size: 11px;
+}
+.lj-transaction-list {
+  width: 100%;
+}
+.lj-transaction-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--lj-line) !important;
+}
+.lj-transaction-row:last-child {
+  border-bottom: 0 !important;
+}
+.lj-transaction-row:hover {
+  background: var(--lj-quiet);
+  border-radius: 5px;
+}
+.lj-transaction-icon {
+  width: 40px;
+  height: 42px;
+  border-radius: 13px;
+  background: var(--lj-quiet);
+  color: var(--lj-secondary);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.lj-transaction-icon.expense {
+  color: var(--lj-accent-text);
+  background: var(--lj-accent-soft);
+}
+.lj-transaction-icon.income {
+  color: var(--lj-green);
+  background: var(--lj-green-soft);
+}
+.lj-transaction-copy {
+  flex: 1;
+  min-width: 0;
+}
+.lj-transaction-copy strong {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 520;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.lj-transaction-copy strong i {
+  color: var(--lj-muted);
+  font-style: normal;
+  font-size: 9px;
+  border: 1px solid var(--lj-line);
+  border-radius: 3px;
+  padding: 0 3px;
+  white-space: nowrap;
+}
+.lj-transaction-copy > span,
+.lj-transaction-copy > small {
+  display: block;
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--lj-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lj-transaction-copy > small {
+  font-size: 10px;
+}
+.lj-transaction-amount {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.lj-transaction-amount.income {
+  color: var(--lj-green);
+}
+.lj-transaction-amount.transfer {
+  color: var(--lj-secondary);
+}
+.lj-quiet-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--lj-muted);
+  padding: 24px 0 27px;
+}
+.lj-quiet-footer span {
+  width: 19px;
+  height: 1px;
+  background: var(--lj-line);
+}
+.lj-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 36px 17px;
+}
+.lj-empty > span {
+  width: 61px;
+  height: 61px;
+  border-radius: 20px;
+  background: var(--lj-accent-soft);
+  color: var(--lj-accent-text);
+  display: grid;
+  place-items: center;
+  margin-bottom: 3px;
+}
+.lj-empty h2 {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.65;
+}
+.lj-empty > p {
+  font-size: 12px;
+  color: var(--lj-muted);
+  line-height: 1.9;
+  max-width: 340px;
+}
+.lj-empty-actions {
+  margin-top: 3px;
+}
+.lj-help {
+  font-size: 12px;
+  line-height: 1.85;
+  color: var(--lj-muted);
+  margin-top: 18px !important;
+  overflow-wrap: anywhere;
+}
+.lj-page-intro {
+  color: var(--lj-secondary);
+  font-size: 13px;
+  line-height: 1.9;
+  margin: 9px 0 22px !important;
+}
+.lj-stat-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-radius: 12px;
+  border: 1px solid var(--lj-line);
+  background: var(--lj-card);
+  padding: 19px 1px;
+}
+.lj-stat-strip > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  padding: 0 5px;
+  border-right: 1px solid var(--lj-line);
+}
+.lj-stat-strip > div:last-child {
+  border: 0;
+}
+.lj-stat-strip span {
+  font-size: 12px;
+  color: var(--lj-muted);
+}
+.lj-stat-strip strong {
+  font-family: 'Segoe UI', sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-size: 18px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+.lj-search {
+  display: flex;
+  align-items: center;
+  min-height: 45px;
+  border: 1px solid var(--lj-line);
+  background: var(--lj-card);
+  padding: 0 12px;
+  border-radius: 10px;
+  margin: 20px 0 12px;
+  gap: 9px;
+  color: var(--lj-muted);
+}
+.lj-search input {
+  border: 0;
+  outline: 0;
+  background: none;
+  color: var(--lj-text);
+  width: 100%;
+  padding: 12px 0;
+  font-size: 13px;
+}
+.lj-search input::placeholder {
+  color: var(--lj-muted);
+}
+.lj-search .lj-icon-button {
+  width: 28px;
+  height: 30px;
+}
+.lj-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 13px 0 17px;
+}
+.lj-filter-row select {
+  border: 1px solid var(--lj-line);
+  background: var(--lj-surface);
+  color: var(--lj-secondary);
+  font-size: 12px;
+  padding: 9px 26px 9px 10px;
+  border-radius: 8px;
+  min-height: 40px;
+  max-width: 46%;
+}
+.lj-filter-row > span {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--lj-muted);
+}
+.lj-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--lj-green-soft) !important;
+  color: var(--lj-green) !important;
+  padding: 9px 12px;
+  border-radius: 7px;
+  font-size: 12px !important;
+  margin: 0 0 9px;
+  max-width: 100%;
+  text-align: left;
+}
+.lj-day-group {
+  margin-bottom: 18px;
+}
+.lj-day-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 13px 0 7px;
+}
+.lj-day-heading strong {
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--lj-secondary);
+}
+.lj-day-heading small {
+  font-size: 10px;
+  color: var(--lj-muted);
+  font-weight: 400;
+  padding-left: 4px;
+}
+.lj-day-heading > span {
+  font-size: 11px;
+  color: var(--lj-muted);
+}
+.lj-load-more {
+  display: flex;
+  width: 100%;
+  margin: 15px 0;
+}
+.lj-segment {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  width: max-content;
+  max-width: 100%;
+  border-radius: 10px;
+  background: var(--lj-quiet);
+  margin: 9px auto 17px;
+  gap: 3px;
+}
+.lj-segment button {
+  min-width: 76px;
+  min-height: 37px;
+  padding: 7px 17px;
+  border-radius: 7px;
+  color: var(--lj-muted);
+  font-size: 14px;
+}
+.lj-segment button.selected {
+  color: var(--lj-accent-text);
+  background: var(--lj-card);
+  font-weight: 560;
+  box-shadow: 0 1px 5px #2d3a2b0a;
+}
+.lj-report-chart {
+  width: 218px;
+  height: 218px;
+  padding: 21px;
+  border-radius: 50%;
+  margin: 25px auto 29px;
+}
+.lj-report-chart > div {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--lj-page);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 9px;
+}
+.lj-report-chart span {
+  font-size: 12px;
+  color: var(--lj-secondary);
+}
+.lj-report-chart strong {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 27px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  max-width: 95%;
+  overflow-wrap: anywhere;
+}
+.lj-report-chart small {
+  color: var(--lj-muted);
+  font-size: 11px;
+}
+.lj-report-row {
+  width: 100%;
+  padding: 17px 0;
+  text-align: left;
+  border-bottom: 1px solid var(--lj-line) !important;
+}
+.lj-report-row > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.lj-report-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.lj-report-row strong {
+  font-size: 13px;
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.lj-report-row b {
+  font-size: 15px;
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.lj-report-row svg {
+  color: var(--lj-muted);
+}
+.lj-report-row-sub {
+  display: flex;
+  align-items: center;
+  margin: 11px 22px 0 18px;
+  gap: 11px;
+  font-size: 11px;
+  color: var(--lj-muted);
+}
+.lj-report-row-sub > span:nth-child(2) {
+  min-width: 40px;
+  text-align: right;
+}
+.lj-report-row-sub small {
+  min-width: 30px;
+  text-align: right;
+  font-size: 10px;
+}
+.lj-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--lj-line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.lj-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+.lj-editor {
+  background: var(--lj-surface);
+}
+.lj-editor-content {
+  border: 0;
+  margin: 0;
+  min-width: 0;
+  padding: 0 28px 12px;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  flex: 1;
+}
+.lj-category-selector {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  height: clamp(180px, 27vh, 270px);
+  border: 1px solid var(--lj-line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.lj-parent-categories,
+.lj-child-categories {
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.lj-parent-categories {
+  background: var(--lj-quiet);
+  padding: 5px 0;
+}
+.lj-parent-categories > button {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  gap: 9px;
+  padding: 14px 11px;
+  width: 100%;
+  min-height: 46px;
+  border-left: 3px solid transparent;
+  color: var(--lj-secondary);
+  font-size: 14px;
+}
+.lj-parent-categories > button.selected {
+  background: var(--lj-card);
+  border-color: var(--lj-accent);
+  color: var(--lj-accent-text);
+  font-weight: 550;
+}
+.lj-parent-categories small {
+  display: block;
+  font-size: 9px;
+  font-weight: 400;
+  color: var(--lj-muted);
+}
+.lj-child-categories {
+  padding: 7px 8px;
+  background: var(--lj-card);
+}
+.lj-child-categories > button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 47px;
+  padding: 12px 10px;
+  border-radius: 8px;
+  color: var(--lj-secondary);
+  text-align: left;
+  font-size: 14px;
+}
+.lj-child-categories > button > span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.lj-child-categories > button.selected {
+  background: var(--lj-accent-soft);
+  color: var(--lj-accent-text);
+}
+.lj-child-categories small {
+  font-size: 9px;
+  color: var(--lj-muted);
+}
+.lj-child-categories > .lj-category-add,
+.lj-parent-categories > .lj-category-add {
+  color: var(--lj-muted);
+  font-size: 12px;
+  justify-content: flex-start;
+}
+.lj-category-empty {
+  border: 1px dashed var(--lj-line);
+  border-radius: 12px;
+}
+.lj-category-empty .lj-empty {
+  padding: 20px 15px;
+  gap: 8px;
+}
+.lj-category-empty .lj-empty > span {
+  width: 45px;
+  height: 45px;
+  border-radius: 14px;
+}
+.lj-category-empty .lj-empty h2 {
+  font-size: 14px;
+}
+.lj-amount-panel {
+  border-bottom: 1px solid var(--lj-line);
+  padding: 15px 2px 8px;
+}
+.lj-amount-panel > label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 15px;
+  color: var(--lj-accent-text);
+  font-size: 12px;
+}
+.lj-amount-panel > label > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.lj-amount-panel small {
+  font-size: 11px;
+  color: var(--lj-muted);
+  flex-shrink: 0;
+}
+.lj-amount-panel > div {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  margin-top: 6px;
+}
+.lj-amount-panel > div > span {
+  color: var(--lj-secondary);
+  font-size: 19px;
+}
+.lj-amount-panel input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: var(--lj-text);
+  text-align: right;
+  font-size: 35px;
+  font-weight: 450;
+  font-family: 'Segoe UI', sans-serif;
+  height: 46px;
+  letter-spacing: 0.5px;
+  font-variant-numeric: tabular-nums;
+}
+.lj-amount-panel input::placeholder {
+  color: var(--lj-muted);
+  opacity: 0.6;
+}
+.lj-entry-account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--lj-secondary);
+  border-bottom: 1px solid var(--lj-line);
+  min-height: 48px;
+}
+.lj-entry-account > label {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex: 1;
+}
+.lj-entry-account label > span {
+  font-size: 11px;
+  color: var(--lj-muted);
+}
+.lj-entry-account select {
+  max-width: 100%;
+  flex: 1;
+  color: var(--lj-secondary);
+  border: 0;
+  background: none;
+  padding: 9px 0;
+  font-size: 13px;
+}
+.lj-entry-account > .lj-icon-button {
+  height: 36px;
+  width: 33px;
+}
+.lj-entry-date {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 13px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--lj-line);
+}
+.lj-entry-date > label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: var(--lj-muted);
+  min-width: 0;
+}
+.lj-entry-date input {
+  border: 0;
+  color: var(--lj-secondary);
+  background: none;
+  font-size: 12px;
+  padding: 4px 0;
+  max-width: 155px;
+}
+.lj-entry-date label:last-child input {
+  max-width: 125px;
+}
+.lj-note-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--lj-muted);
+  padding: 12px 0 5px;
+}
+.lj-note-field svg {
+  margin-top: 3px;
+}
+.lj-note-field textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 28px;
+  max-height: 130px;
+  line-height: 1.65;
+  font-size: 12px;
+  outline: 0;
+  border: 0;
+  background: none;
+  color: var(--lj-text);
+}
+.lj-note-field textarea::placeholder {
+  color: var(--lj-muted);
+}
+.lj-editor-footer {
+  padding: 7px 22px 16px;
+  border-top: 1px solid var(--lj-line);
+  background: var(--lj-surface);
+}
+.lj-calculator {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) 0.85fr;
+  gap: 5px;
+  margin-bottom: 11px;
+}
+.lj-calculator button {
+  display: grid;
+  place-items: center;
+  min-height: 45px;
+  height: clamp(43px, 6vh, 57px);
+  border-radius: 8px;
+  background: var(--lj-quiet);
+  color: var(--lj-text);
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 400;
+  font-size: 24px;
+}
+.lj-calculator button.operator {
+  color: var(--lj-accent-text);
+  background: var(--lj-accent-soft);
+}
+.lj-calculator button.equals {
+  background: #eed3bf;
+  color: #aa624a;
+}
+[data-theme='dark'] .lj-calculator button.equals {
+  background: #65513f;
+  color: #f2bea2;
+}
+.lj-calculator button:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+.lj-calculator button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+.lj-save-actions {
+  display: flex;
+  gap: 10px;
+}
+.lj-save-actions .lj-secondary {
+  width: 39%;
+  color: var(--lj-accent-text);
+  border-color: var(--lj-accent);
+  background: none;
+}
+.lj-save-actions .lj-primary {
+  flex: 1;
+}
+.lj-transfer-panel {
+  border: 1px solid var(--lj-line);
+  border-radius: 12px;
+  padding: 19px;
+  text-align: center;
+}
+.lj-transfer-panel > span {
+  color: var(--lj-green);
+}
+.lj-transfer-panel h2 {
+  font-size: 15px;
+  font-weight: 500;
+  margin: 10px 0 5px;
+}
+.lj-transfer-panel > p {
+  color: var(--lj-muted);
+  font-size: 11px;
+  line-height: 1.8;
+}
+.lj-transfer-panel .lj-field {
+  text-align: left;
+  margin-top: 16px;
+}
+.lj-inline-error {
+  color: var(--lj-danger);
+  font-size: 12px;
+  line-height: 1.8;
+  padding: 5px 0;
+  overflow-wrap: anywhere;
+}
+.lj-modal {
+  --lj-page: inherit;
+  padding: 0;
+  color: var(--lj-text);
+  background: var(--lj-card);
+  border: 1px solid var(--lj-line);
+  border-radius: 18px;
+  box-shadow: 0 20px 55px #15251c33;
+  width: min(430px, calc(100vw - 30px));
+  max-height: min(88dvh, 900px);
+  overflow-y: auto;
+  margin: auto;
+  scrollbar-width: thin;
+}
+.lj-modal-wide {
+  width: min(640px, calc(100vw - 30px));
+}
+.lj-modal::backdrop {
+  background: #1b2c2173;
+  backdrop-filter: blur(3px);
+}
+.lj-modal-body {
+  padding: 22px;
+}
+.lj-modal-body > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 17px;
+}
+.lj-modal-body > header h2 {
+  font-size: 18px;
+  font-weight: 580;
+  overflow-wrap: anywhere;
+}
+.lj-modal-body > header .lj-icon-button {
+  margin: -7px -7px -7px 0;
+  width: 36px;
+  height: 36px;
+}
+.lj-form {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+
+.lj-modal-content {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.lj-modal-feedback {
+  margin-top: 17px;
+  padding: 12px;
+  border: 1px solid var(--lj-line);
+  border-radius: 8px;
+  background: var(--lj-page);
+}
+.lj-page-error {
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 30px 24px;
+  text-align: center;
+}
+.lj-page-error h1 {
+  font-size: 20px;
+}
+.lj-page-error p {
+  max-width: 440px;
+  color: var(--lj-secondary);
+  line-height: 1.8;
+}
+.lj-page-error > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+.lj-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--lj-secondary);
+}
+.lj-field > span {
+  font-size: 12px;
+  font-weight: 500;
+}
+.lj-field > input,
+.lj-field > select,
+.lj-field > textarea {
+  width: 100%;
+  background: var(--lj-page);
+  border: 1px solid var(--lj-line);
+  border-radius: 8px;
+  color: var(--lj-text);
+  padding: 12px;
+  min-height: 44px;
+  font-size: 14px;
+}
+.lj-field > textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+.lj-field > small {
+  font-size: 11px;
+  color: var(--lj-muted);
+  line-height: 1.8;
+  font-weight: 400;
+}
+.lj-form > .lj-help {
+  margin-top: 0 !important;
+}
+.lj-form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
+}
+.lj-form-actions > button {
+  flex: 1;
+}
+.lj-confirm-copy {
+  font-size: 14px;
+  color: var(--lj-secondary);
+  line-height: 1.9;
+  margin-bottom: 24px;
+}
+.lj-confirm-copy p + p {
+  margin-top: 9px;
+}
+.lj-label-chip {
+  display: inline-flex;
+  width: max-content;
+  color: var(--lj-accent-text);
+  background: var(--lj-accent-soft);
+  padding: 5px 8px;
+  font-size: 11px;
+  border-radius: 5px;
+}
+.lj-icon-picker {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.lj-icon-picker button {
+  min-height: 43px;
+  border-radius: 7px;
+  color: var(--lj-secondary);
+  background: var(--lj-quiet);
+  border: 1px solid transparent;
+}
+.lj-icon-picker button.selected {
+  background: var(--lj-accent-soft);
+  color: var(--lj-accent-text);
+  border-color: var(--lj-accent);
+}
+.lj-management-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 17px 0;
+}
+.lj-management-tools h2 {
+  font-size: 15px;
+  font-weight: 550;
+}
+.lj-management-tools label {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  color: var(--lj-muted);
+  font-size: 12px;
+  min-height: 34px;
+}
+.lj-management-tools input {
+  accent-color: var(--lj-accent);
+}
+.lj-category-group {
+  border: 1px solid var(--lj-line);
+  border-radius: 12px;
+  background: var(--lj-card);
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+.lj-category-group > header {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--lj-line);
+  padding: 5px 10px 5px 14px;
+}
+.lj-category-group > header > button:first-child {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  text-align: left;
+  padding: 8px 0;
+  min-width: 0;
+}
+.lj-category-group > header > button:first-child > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.lj-category-group strong {
+  font-size: 14px;
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+.lj-category-group small {
+  display: block;
+  color: var(--lj-muted);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+.lj-category-group-icon {
+  width: 37px;
+  height: 39px;
+  display: grid;
+  place-items: center;
+  background: var(--lj-accent-soft);
+  color: var(--lj-accent-text);
+  border-radius: 11px;
+}
+.lj-category-group > div {
+  padding: 0 14px;
+}
+.lj-category-child {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 14px 2px;
+  min-height: 50px;
+  border-bottom: 1px solid var(--lj-line) !important;
+  color: var(--lj-secondary) !important;
+}
+.lj-category-child:last-child {
+  border-bottom: 0 !important;
+}
+.lj-category-child strong {
+  flex: 1;
+  font-weight: 400;
+  min-width: 0;
+}
+.lj-category-child > span {
+  color: var(--lj-muted);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.lj-category-child em {
+  font-style: normal;
+  color: var(--lj-muted);
+  font-size: 10px;
+}
+.is-archived {
+  opacity: 0.65;
+}
+.lj-action-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 13px;
+}
+.lj-action-list > button,
+.lj-action-pair > button {
+  min-height: 51px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--lj-line);
+  text-align: left;
+}
+.lj-action-list > button > svg:last-child {
+  margin-left: auto;
+}
+.lj-action-pair {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.lj-action-pair > button {
+  flex: 1;
+}
+.lj-merge-source {
+  background: var(--lj-quiet);
+  border-radius: 10px;
+  padding: 14px;
+}
+.lj-merge-source span {
+  font-size: 11px;
+  display: block;
+  color: var(--lj-muted);
+  margin-bottom: 6px;
+}
+.lj-merge-source strong {
+  font-size: 15px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.lj-merge-preview {
+  padding: 15px;
+  border: 1px solid var(--lj-line);
+  background: var(--lj-green-soft);
+  border-radius: 11px;
+}
+.lj-merge-preview > div {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+}
+.lj-merge-preview > div > span {
+  font-size: 11px;
+  color: var(--lj-muted);
+  flex-shrink: 0;
+}
+.lj-merge-preview strong {
+  font-size: 13px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.lj-merge-preview > svg {
+  margin: 8px 0 8px 34px;
+  color: var(--lj-green);
+}
+.lj-merge-preview dl,
+.lj-import-receipt dl {
+  margin: 15px 0 0;
+  padding-top: 9px;
+  border-top: 1px solid var(--lj-line);
+}
+.lj-merge-preview dl > div,
+.lj-import-receipt dl > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 12px;
+  padding: 5px 0;
+}
+.lj-merge-preview dt,
+.lj-import-receipt dt {
+  color: var(--lj-secondary);
+}
+.lj-merge-preview dd,
+.lj-import-receipt dd {
+  margin: 0;
+  font-weight: 550;
+}
+.lj-account-total {
+  padding: 23px 0 26px;
+}
+.lj-account-total > span {
+  color: var(--lj-secondary);
+  font-size: 13px;
+}
+.lj-account-total > strong {
+  display: block;
+  font-size: 36px;
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 450;
+  margin-top: 10px;
+  overflow-wrap: anywhere;
+}
+.lj-account-total small {
+  font-size: 20px;
+  padding-right: 5px;
+}
+.lj-account-total p {
+  color: var(--lj-muted);
+  font-size: 11px;
+  line-height: 1.9;
+  margin-top: 9px;
+}
+.lj-account-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.lj-account-card {
+  background: var(--lj-card);
+  border: 1px solid var(--lj-line);
+  border-radius: 13px;
+  padding: 15px;
+}
+.lj-account-card > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.lj-account-card > div > span {
+  color: var(--lj-green);
+}
+.lj-account-card.bank > div > span {
+  color: #7f9fb9;
+}
+.lj-account-card.cash > div > span {
+  color: #b29b6e;
+}
+.lj-account-card h3 {
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.lj-account-card small {
+  color: var(--lj-muted);
+  font-size: 9px;
+}
+.lj-account-card > div > .lj-icon-button {
+  margin: -5px -6px -5px 0;
+  width: 33px;
+  height: 33px;
+}
+.lj-account-detail-button {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  text-align: left;
+  gap: 7px;
+  width: 100%;
+  padding: 19px 0 0;
+}
+.lj-account-detail-button > span:first-child {
+  display: block;
+  font-size: 10px;
+  color: var(--lj-muted);
+  flex: 1;
+  min-width: 0;
+}
+.lj-account-detail-button strong {
+  display: block;
+  font-size: 25px;
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 450;
+  color: var(--lj-text);
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+.lj-account-detail-button > span:last-child {
+  color: var(--lj-muted);
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-bottom: 4px;
+  white-space: nowrap;
+}
+.lj-book-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.lj-book-card {
+  border: 1px solid var(--lj-line);
+  background: var(--lj-card);
+  border-radius: 13px;
+  overflow: hidden;
+}
+.lj-book-card.selected {
+  border-color: var(--lj-accent);
+}
+.lj-book-select {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 18px;
+  gap: 13px;
+  text-align: left;
+}
+.lj-book-select:disabled {
+  opacity: 1 !important;
+}
+.lj-book-select > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.lj-book-select strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+.lj-book-select small {
+  display: block;
+  font-size: 11px;
+  color: var(--lj-muted);
+  margin-top: 6px;
+}
+.lj-book-select > svg {
+  color: var(--lj-accent-text);
+}
+.lj-book-icon {
+  width: 48px;
+  height: 53px;
+  display: grid;
+  place-items: center;
+  color: var(--lj-accent-text);
+  border-radius: 13px;
+  background: var(--lj-accent-soft);
+}
+.lj-book-actions {
+  display: flex;
+  gap: 17px;
+  align-items: center;
+  border-top: 1px solid var(--lj-line);
+  padding: 1px 18px;
+}
+.lj-book-actions > button {
+  min-height: 42px;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--lj-secondary);
+  padding: 6px 0;
+}
+.lj-book-actions > span {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--lj-accent-text);
+}
+.lj-data-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 23px 5px 28px;
+}
+.lj-data-hero .lj-brand-mark {
+  width: 58px;
+  height: 62px;
+  border-radius: 17px;
+  margin-bottom: 17px;
+}
+.lj-data-hero h2 {
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+}
+.lj-data-hero p {
+  margin-top: 12px;
+  color: var(--lj-muted);
+  font-size: 12px;
+  line-height: 1.9;
+}
+.lj-private-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--lj-green);
+  background: var(--lj-green-soft);
+  padding: 6px 9px;
+  border-radius: 5px;
+  margin-top: 13px;
+}
+.lj-settings-group {
+  margin-bottom: 27px;
+}
+.lj-settings-group h3 {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--lj-muted);
+  margin: 0 0 7px;
+}
+.lj-setting-row {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  padding: 17px 0;
+  min-height: 64px;
+  border-bottom: 1px solid var(--lj-line) !important;
+  text-align: left;
+}
+.lj-setting-row > svg:first-child {
+  color: var(--lj-secondary);
+}
+.lj-setting-row > svg:last-child {
+  color: var(--lj-muted);
+  margin-left: auto;
+}
+.lj-setting-row > span {
+  flex: 1;
+  min-width: 0;
+}
+.lj-setting-row strong {
+  font-size: 14px;
+  font-weight: 500;
+  display: block;
+}
+.lj-setting-row small {
+  font-size: 11px;
+  color: var(--lj-muted);
+  line-height: 1.6;
+  margin-top: 4px;
+  display: block;
+}
+.lj-theme-picker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+.lj-theme-picker > button {
+  border: 1px solid var(--lj-line);
+  background: var(--lj-card);
+  border-radius: 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 15px 5px;
+  color: var(--lj-muted);
+  font-size: 12px;
+}
+.lj-theme-picker > button.selected {
+  border-color: var(--lj-accent);
+  background: var(--lj-accent-soft);
+  color: var(--lj-accent-text);
+}
+.lj-about {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--lj-muted);
+  margin-top: 31px;
+  padding-bottom: 7px;
+}
+.lj-import-history {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.lj-import-receipt {
+  padding: 15px;
+  background: var(--lj-page);
+  border: 1px solid var(--lj-line);
+  border-radius: 10px;
+}
+.lj-import-receipt > div {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: var(--lj-green);
+}
+.lj-import-receipt strong {
+  font-size: 13px;
+  color: var(--lj-text);
+  overflow-wrap: anywhere;
+  font-weight: 500;
+}
+.lj-import-receipt > small {
+  display: block;
+  font-size: 10px;
+  color: var(--lj-muted);
+  margin-top: 8px;
+}
+.lj-import-receipt > p {
+  color: var(--lj-muted);
+  font-size: 11px;
+  line-height: 1.8;
+  margin-top: 11px;
+}
+.lj-budget-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 13px 0;
+}
+.lj-budget-card {
+  border: 1px solid var(--lj-line);
+  background: var(--lj-card);
+  padding: 15px 18px;
+  border-radius: 12px;
+}
+.lj-budget-card > header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+}
+.lj-budget-card h2 {
+  font-size: 14px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.lj-budget-card > header > button {
+  width: 34px;
+  height: 34px;
+  margin-right: -7px;
+}
+.lj-budget-amount {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 11px 0 15px;
+  flex-wrap: wrap;
+}
+.lj-budget-amount strong {
+  font-size: 27px;
+  font-weight: 450;
+  font-family: 'Segoe UI', sans-serif;
+}
+.lj-budget-amount span {
+  font-size: 12px;
+  color: var(--lj-muted);
+}
+.lj-budget-bar {
+  height: 7px;
+  border-radius: 6px;
+  background: var(--lj-line);
+  overflow: hidden;
+}
+.lj-budget-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--lj-green);
+}
+.lj-budget-bar > span.over {
+  background: var(--lj-danger);
+}
+.lj-budget-card footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 7px;
+  font-size: 11px;
+  color: var(--lj-muted);
+}
+.lj-budget-card footer > button {
+  font-size: 11px !important;
+}
+.lj-template-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.lj-template-card {
+  border: 1px solid var(--lj-line);
+  background: var(--lj-card);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.lj-template-use {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 17px;
+}
+.lj-template-use > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.lj-template-use strong {
+  font-size: 14px;
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+.lj-template-use small,
+.lj-template-use em {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--lj-muted);
+  line-height: 1.6;
+  font-style: normal;
+}
+.lj-template-use b {
+  font-size: 16px;
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 500;
+}
+.lj-template-card > p {
+  color: var(--lj-muted);
+  padding: 0 17px 14px;
+  font-size: 12px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.lj-template-card footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-top: 1px solid var(--lj-line);
+  padding: 2px 17px;
+}
+.lj-template-card footer > button {
+  min-height: 41px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--lj-secondary);
+  padding: 5px 0;
+}
+.lj-template-card footer > button:last-child {
+  margin-left: auto;
+}
+.lj-saving {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  background: var(--lj-card);
+  color: var(--lj-secondary);
+  border: 1px solid var(--lj-line);
+  box-shadow: var(--lj-shadow);
+  border-radius: 20px;
+  padding: 8px 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  pointer-events: none;
+}
+.lj-saving > span {
+  width: 11px;
+  height: 11px;
+  border: 2px solid var(--lj-line);
+  border-top-color: var(--lj-accent);
+  border-radius: 50%;
+  animation: lj-spin 0.8s linear infinite;
+}
+.lj-toast {
+  position: absolute;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(480px, calc(100% - 26px));
+  min-width: 160px;
+  width: max-content;
+  background: #334d3e;
+  color: #fffdf7;
+  border-radius: 11px;
+  box-shadow: 0 7px 28px #17291d24;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 8px 10px 14px;
+  font-size: 12px;
+  line-height: 1.75;
+  pointer-events: none;
+}
+.lj-toast.error {
+  background: #7a443b;
+}
+.lj-toast > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@keyframes lj-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 780px) {
+  .ledger-app {
+    display: block;
+    max-width: none;
+  }
+  .lj-sidebar {
+    display: none;
+  }
+  .lj-header {
+    height: 58px;
+    min-height: 58px;
+    padding: 0 12px;
+  }
+  .lj-header h1 {
+    font-size: 18px;
+    margin-right: 0;
+  }
+  .lj-header-action {
+    min-width: 42px;
+  }
+  .lj-page-pad {
+    padding: 9px 22px 28px;
+  }
+  .lj-home-header {
+    padding: 23px 23px 8px;
+    gap: 11px;
+  }
+  .lj-home-header h1 {
+    font-size: 22px;
+  }
+  .lj-overview {
+    padding: 0 23px;
+  }
+  .lj-balance-layout {
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+    gap: 13px;
+    max-width: 430px;
+  }
+  .lj-spending-ring strong {
+    font-size: 27px;
+  }
+  .lj-spending-ring span {
+    font-size: 12px;
+  }
+  .lj-spending-ring em {
+    font-size: 9px;
+  }
+  .lj-month-statistics {
+    gap: 16px;
+  }
+  .lj-month-statistics strong {
+    font-size: 18px;
+  }
+  .lj-month-statistics span {
+    font-size: 11px;
+  }
+  .lj-month-statistics > div:last-child {
+    padding-top: 10px;
+  }
+  .lj-add-entry {
+    width: calc(100% - 46px);
+    margin: 22px 23px 0;
+    min-height: 69px;
+    padding: 0 18px;
+  }
+  .lj-quick-actions {
+    padding: 25px 21px 21px;
+    gap: 8px;
+  }
+  .lj-quick-actions > button > span {
+    width: 47px;
+    height: 47px;
+  }
+  .lj-welcome-card {
+    margin: 4px 23px 22px;
+    padding: 16px;
+  }
+  .lj-welcome-card h2 {
+    font-size: 14px;
+  }
+  .lj-welcome-card p {
+    font-size: 11px;
+  }
+  .lj-recent {
+    padding: 15px 23px 0;
+  }
+  .lj-account-cards {
+    grid-template-columns: 1fr;
+  }
+  .lj-editor-content {
+    padding: 0 20px 10px;
+  }
+  .lj-category-selector {
+    height: clamp(158px, 25dvh, 224px);
+  }
+  .lj-parent-categories > button {
+    padding: 13px 10px;
+    font-size: 13px;
+  }
+  .lj-child-categories > button {
+    padding: 11px 8px;
+    font-size: 13px;
+  }
+  .lj-parent-categories > button > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .lj-parent-categories > button > svg {
+    width: 18px;
+  }
+  .lj-editor-footer {
+    padding: 7px 16px 12px;
+  }
+  .lj-calculator button {
+    min-height: 40px;
+    height: clamp(40px, 5.7dvh, 51px);
+  }
+  .lj-save-actions > button {
+    min-height: 48px;
+  }
+  .lj-stat-strip strong {
+    font-size: 16px;
+  }
+  .lj-modal-body {
+    padding: 20px;
+  }
+  .lj-toast {
+    bottom: 17px;
+  }
+}
+@media (max-width: 360px) {
+  .lj-home-header,
+  .lj-recent {
+    padding-left: 17px;
+    padding-right: 17px;
+  }
+  .lj-overview {
+    padding: 0 15px;
+  }
+  .lj-balance-layout {
+    gap: 7px;
+  }
+  .lj-spending-ring strong {
+    font-size: 23px;
+  }
+  .lj-month-statistics strong {
+    font-size: 16px;
+  }
+  .lj-page-pad {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .lj-transaction-amount {
+    font-size: 15px;
+  }
+  .lj-editor-content {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  .lj-category-selector {
+    grid-template-columns: 1fr 1.5fr;
+  }
+  .lj-entry-date input {
+    max-width: 130px;
+    font-size: 11px;
+  }
+  .lj-entry-date label:last-child input {
+    max-width: 112px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ledger-app *,
+  .lj-modal * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

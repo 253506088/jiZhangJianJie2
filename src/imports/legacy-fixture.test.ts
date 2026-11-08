@@ -14,25 +14,61 @@ const digest = createHash('sha256').update(bytes).digest('hex');
 
 describe('未修改原App导出的完全虚构文件', () => {
   it('完整8笔原样文件保留四种类型、单层收入、非默认成员和空转账类型', () => {
-    const file=readFileSync(new URL('../../tests/fixtures/legacy-4.8.8-full-types.xls',import.meta.url));
-    const fileHash=createHash('sha256').update(file).digest('hex');
+    const file = readFileSync(
+      new URL('../../tests/fixtures/legacy-4.8.8-full-types.xls', import.meta.url),
+    );
+    const fileHash = createHash('sha256').update(file).digest('hex');
     expect(fileHash).toBe('b809a5863a215c3f32457fe33f3e4ef0f2ee4ba90a1b0436de81ef97cade1584');
-    const workbook={...readWorkbookBytes(Uint8Array.from(file).buffer,'full-types.xls'),digest:fileHash};
-    const plan=prepareImport(workbook,workbook.sheets.map(autoMapping));
-    expect(plan.errors).toEqual([]);expect(plan.rows).toHaveLength(8);
-    expect(plan.rows.find(row=>row.direction==='income')).toMatchObject({primary:'收入',secondary:'工资薪水',member:'FixtureMember',amountCents:10125,note:'Fixture salary memo'});
-    expect(plan.rows.find(row=>row.direction==='transfer')).toMatchObject({account:'储蓄卡',toAccount:'现金',member:'FixtureMember',amountCents:550});
-    expect(plan.rows.find(row=>row.direction==='transfer')?.transferType).toBeUndefined();
-    expect(plan.rows.filter(row=>row.direction==='loan').map(row=>row.loanType).sort()).toEqual(['borrow','collect','lend','repay']);
-    const initial=createEmptyState();
-    const result=applyImport(initial,plan,{targetBookId:initial.books[0].id,useBookColumn:false,allowRejectedRows:false});
+    const workbook = {
+      ...readWorkbookBytes(Uint8Array.from(file).buffer, 'full-types.xls'),
+      digest: fileHash,
+    };
+    const plan = prepareImport(workbook, workbook.sheets.map(autoMapping));
+    expect(plan.errors).toEqual([]);
+    expect(plan.rows).toHaveLength(8);
+    expect(plan.rows.find((row) => row.direction === 'income')).toMatchObject({
+      primary: '收入',
+      secondary: '工资薪水',
+      member: 'FixtureMember',
+      amountCents: 10125,
+      note: 'Fixture salary memo',
+    });
+    expect(plan.rows.find((row) => row.direction === 'transfer')).toMatchObject({
+      account: '储蓄卡',
+      toAccount: '现金',
+      member: 'FixtureMember',
+      amountCents: 550,
+    });
+    expect(plan.rows.find((row) => row.direction === 'transfer')?.transferType).toBeUndefined();
+    expect(
+      plan.rows
+        .filter((row) => row.direction === 'loan')
+        .map((row) => row.loanType)
+        .sort(),
+    ).toEqual(['borrow', 'collect', 'lend', 'repay']);
+    const initial = createEmptyState();
+    const result = applyImport(initial, plan, {
+      targetBookId: initial.books[0].id,
+      useBookColumn: false,
+      allowRejectedRows: false,
+    });
     expect(result.added).toBe(8);
-    const cash=result.state.accounts.find(account=>account.name==='现金')!;
-    const bank=result.state.accounts.find(account=>account.name==='储蓄卡')!;
-    expect(accountBalance(result.state,cash.id)).toBe(3950);
-    expect(accountBalance(result.state,bank.id)).toBe(9575);
-    expect(transactionTotals(result.state.transactions)).toMatchObject({incomeCents:10125,expenseCents:2000,transferCents:550,loanCount:4});
-    expect(loanTotals(result.state)).toMatchObject({netCents:-5400,cashInCents:7800,cashOutCents:2400,count:4});
+    const cash = result.state.accounts.find((account) => account.name === '现金')!;
+    const bank = result.state.accounts.find((account) => account.name === '储蓄卡')!;
+    expect(accountBalance(result.state, cash.id)).toBe(3950);
+    expect(accountBalance(result.state, bank.id)).toBe(9575);
+    expect(transactionTotals(result.state.transactions)).toMatchObject({
+      incomeCents: 10125,
+      expenseCents: 2000,
+      transferCents: 550,
+      loanCount: 4,
+    });
+    expect(loanTotals(result.state)).toMatchObject({
+      netCents: -5400,
+      cashInCents: 7800,
+      cashOutCents: 2400,
+      count: 4,
+    });
   });
   it('固定输入身份和OLE/BIFF容器保持原样', () => {
     expect(bytes.length).toBe(13824);

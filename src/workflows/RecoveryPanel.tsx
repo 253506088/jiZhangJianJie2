@@ -56,12 +56,17 @@ export const RecoveryPanel = forwardRef<
   }, [repository]);
   const inspect = async (revision: number) => {
     const request = ++requestId.current;
-    setSelected(revision); setConfirmed(false); setVerified(null); setChecking(true); setError('');
+    setSelected(revision);
+    setConfirmed(false);
+    setVerified(null);
+    setChecking(true);
+    setError('');
     try {
       const value = await repository.inspectRecovery(revision);
       if (request === requestId.current) setVerified(value);
     } catch (cause) {
-      if (request === requestId.current) setError(cause instanceof Error ? cause.message : '这个保存点未通过校验');
+      if (request === requestId.current)
+        setError(cause instanceof Error ? cause.message : '这个保存点未通过校验');
     } finally {
       if (request === requestId.current) setChecking(false);
     }
@@ -139,8 +144,18 @@ export const RecoveryPanel = forwardRef<
             </label>
           ))
         )}
-        {checking && <p className="root-loading"><LoaderCircle className="import-spin" size={18}/>校验所选保存点…</p>}
-        {verified && !checking && <p className="import-good">校验通过：{verified.state.transactions.length} 笔流水、{verified.state.books.length} 个账本、{verified.state.categories.length} 个分类。</p>}
+        {checking && (
+          <p className="root-loading">
+            <LoaderCircle className="import-spin" size={18} />
+            校验所选保存点…
+          </p>
+        )}
+        {verified && !checking && (
+          <p className="import-good">
+            校验通过：{verified.state.transactions.length} 笔流水、{verified.state.books.length}{' '}
+            个账本、{verified.state.categories.length} 个分类。
+          </p>
+        )}
         {verified && !checking && (
           <label className="import-check import-warning">
             <input

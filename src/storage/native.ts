@@ -1,12 +1,17 @@
 import { registerPlugin } from '@capacitor/core';
-import { RevisionConflictError, type SnapshotStorage, type StoredSnapshot, type SnapshotHeader } from './types';
+import {
+  RevisionConflictError,
+  type SnapshotStorage,
+  type StoredSnapshot,
+  type SnapshotHeader,
+} from './types';
 
 interface LedgerStorePlugin {
   read(): Promise<{ snapshot: StoredSnapshot | null }>;
   write(options: { snapshot: StoredSnapshot; expectedRevision: number }): Promise<void>;
   history(): Promise<{ snapshots: StoredSnapshot[] }>;
   historyHeaders(): Promise<{ headers: SnapshotHeader[] }>;
-  readHistory(options: {revision: number}): Promise<{snapshot: StoredSnapshot | null}>;
+  readHistory(options: { revision: number }): Promise<{ snapshot: StoredSnapshot | null }>;
 }
 
 const plugin = registerPlugin<LedgerStorePlugin>('LedgerStore');
@@ -41,6 +46,6 @@ export class NativeSqliteStorage implements SnapshotStorage {
   }
 
   async readHistory(revision: number) {
-    return (await plugin.readHistory({revision})).snapshot;
+    return (await plugin.readHistory({ revision })).snapshot;
   }
 }

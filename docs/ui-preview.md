@@ -1,5 +1,7 @@
 # 第一版交互预览
 
+> 本文是初始预览的历史记录。该版本已隔离到 prototypes/ui-v1；当前正式 App 使用 src/ui、src/core、src/storage、src/imports 和 src/backup，详见根README与TODO。
+
 实现日期：2026-11-08（Asia/Shanghai）。开发根目录：`D:\code\my\2\记账`。
 
 ## 本轮目标

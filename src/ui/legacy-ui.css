@@ -1,0 +1,767 @@
+/* Actual legacy affordances, kept separate from the accepted classic layout. */
+.ledger-app[data-home-layout='overview'] {
+  --lj-page: #f8fafb;
+  --lj-surface: #ffffff;
+  --lj-card: #ffffff;
+  --lj-text: #303c43;
+  --lj-muted: #7e8a90;
+  --lj-secondary: #66777f;
+  --lj-line: #e7edf0;
+  --lj-quiet: #f0f5f7;
+}
+.ledger-app[data-theme='dark'][data-home-layout='overview'] {
+  --lj-page: #1d272d;
+  --lj-surface: #253138;
+  --lj-card: #29363e;
+  --lj-text: #e7edf0;
+  --lj-muted: #9aa8af;
+  --lj-secondary: #bfccd1;
+  --lj-line: #3c4a52;
+  --lj-quiet: #303e45;
+}
+.ledger-app[data-accent='blue'] {
+  --lj-accent: #17b6ed;
+  --lj-accent-text: #087da5;
+  --lj-accent-soft: #e4f5fc;
+}
+.ledger-app[data-accent='pink'] {
+  --lj-accent: #db81a0;
+  --lj-accent-text: #a34368;
+  --lj-accent-soft: #fbedf2;
+}
+.ledger-app[data-accent='yellow'] {
+  --lj-accent: #d9a428;
+  --lj-accent-text: #86600e;
+  --lj-accent-soft: #fbf3dd;
+  --lj-on-accent: #34270c;
+}
+.ledger-app[data-accent='red'] {
+  --lj-accent: #d96a64;
+  --lj-accent-text: #a83e39;
+  --lj-accent-soft: #fcece8;
+}
+.ledger-app[data-accent='brown'] {
+  --lj-accent: #a87c62;
+  --lj-accent-text: #805139;
+  --lj-accent-soft: #f4ebe4;
+}
+.ledger-app[data-accent='green'] {
+  --lj-accent: #7dad54;
+  --lj-accent-text: #4c752b;
+  --lj-accent-soft: #eff6e9;
+}
+.ledger-app[data-accent='gray'] {
+  --lj-accent: #8b9295;
+  --lj-accent-text: #60696e;
+  --lj-accent-soft: #edf0f1;
+}
+.ledger-app[data-accent='teal'] {
+  --lj-accent: #45a798;
+  --lj-accent-text: #207c70;
+  --lj-accent-soft: #e5f5f1;
+}
+.ledger-app[data-accent='coral'] {
+  --lj-accent: #de856d;
+  --lj-accent-text: #b85942;
+  --lj-accent-soft: #fbeddf;
+}
+.ledger-app[data-theme='dark'][data-accent='blue'] {
+  --lj-accent: #6fc9e8;
+  --lj-accent-text: #8bd7ef;
+  --lj-accent-soft: #294752;
+}
+.ledger-app[data-theme='dark'][data-accent='pink'] {
+  --lj-accent: #dea1b7;
+  --lj-accent-text: #edb4c9;
+  --lj-accent-soft: #4b3540;
+}
+.ledger-app[data-theme='dark'][data-accent='yellow'] {
+  --lj-accent: #dabb66;
+  --lj-accent-text: #e8cb83;
+  --lj-accent-soft: #49432d;
+}
+.ledger-app[data-theme='dark'][data-accent='red'] {
+  --lj-accent: #df9991;
+  --lj-accent-text: #f0b0a8;
+  --lj-accent-soft: #4c3534;
+}
+.ledger-app[data-theme='dark'][data-accent='brown'] {
+  --lj-accent: #c7a58d;
+  --lj-accent-text: #dfbea7;
+  --lj-accent-soft: #463c35;
+}
+.ledger-app[data-theme='dark'][data-accent='green'] {
+  --lj-accent: #a7c989;
+  --lj-accent-text: #bddd9f;
+  --lj-accent-soft: #354632;
+}
+.ledger-app[data-theme='dark'][data-accent='gray'] {
+  --lj-accent: #afb9be;
+  --lj-accent-text: #cbd3d7;
+  --lj-accent-soft: #3c474d;
+}
+.ledger-app[data-theme='dark'][data-accent='teal'] {
+  --lj-accent: #85c8ba;
+  --lj-accent-text: #a4e0d2;
+  --lj-accent-soft: #304840;
+}
+.ledger-app[data-theme='dark'][data-accent='coral'] {
+  --lj-accent: #dea18b;
+  --lj-accent-text: #efb29b;
+  --lj-accent-soft: #493c31;
+}
+.ledger-app .lj-primary {
+  color: var(--lj-on-accent, #fff);
+}
+.lj-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.lj-dashboard-home {
+  background: var(--lj-surface);
+}
+.lj-dashboard-header {
+  padding: 19px 23px 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 64px;
+}
+.lj-dashboard-book {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--lj-secondary) !important;
+  min-height: 42px;
+  text-align: left;
+  padding: 0;
+  font-size: 15px !important;
+}
+.lj-dashboard-book > span {
+  max-width: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lj-dashboard-hero {
+  position: relative;
+  width: min(100%, 460px);
+  height: 231px;
+  margin: 0 auto;
+}
+.lj-dashboard-art {
+  width: 100%;
+  height: 100%;
+}
+.lj-art-outline {
+  fill: none;
+  stroke: var(--lj-line);
+  stroke-width: 1.3;
+  stroke-linecap: round;
+}
+.lj-art-leaf {
+  fill: var(--lj-accent-soft);
+  stroke: var(--lj-accent);
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.lj-art-book {
+  fill: var(--lj-accent-soft);
+  stroke: var(--lj-accent);
+  stroke-width: 1.2;
+}
+.lj-art-book-lines {
+  fill: none;
+  stroke: var(--lj-accent);
+  stroke-width: 1.3;
+  stroke-linecap: round;
+}
+.lj-art-dot {
+  fill: var(--lj-accent);
+  opacity: 0.45;
+}
+.lj-art-spark {
+  fill: none;
+  stroke: var(--lj-accent);
+  opacity: 0.5;
+  stroke-linecap: round;
+}
+.lj-art-ground {
+  fill: none;
+  stroke: var(--lj-line);
+  stroke-width: 1.5;
+}
+.lj-dashboard-hero-copy {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  width: 155px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.lj-dashboard-hero-copy > span {
+  color: var(--lj-muted);
+  font-size: 12px;
+}
+.lj-dashboard-hero-copy strong {
+  font:
+    500 25px 'Segoe UI',
+    sans-serif;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.lj-dashboard-hero-copy small {
+  color: var(--lj-muted);
+  font-size: 10px;
+}
+.lj-dashboard-section {
+  padding: 12px 24px 17px;
+}
+.lj-dashboard-section > h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 17px;
+  color: var(--lj-secondary);
+  font-size: 14px;
+  font-weight: 550;
+}
+.lj-dashboard-section > h2 > i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid var(--lj-accent);
+}
+.lj-budget-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--lj-line);
+  border-radius: 11px;
+  box-shadow: 0 3px 9px #1a344507;
+  background: var(--lj-card);
+}
+.lj-budget-tiles > div,
+.lj-budget-tiles > button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 19px 4px 14px;
+  min-height: 98px;
+}
+.lj-budget-tiles strong {
+  font:
+    500 16px 'Segoe UI',
+    sans-serif;
+  color: var(--lj-text);
+}
+.lj-budget-tiles span {
+  color: var(--lj-secondary);
+  font-size: 12px;
+}
+.lj-budget-tiles small {
+  color: var(--lj-muted);
+  font-size: 9px;
+}
+.lj-budget-tiles > button {
+  border-radius: 0 11px 11px 0;
+}
+.lj-budget-tiles > button:hover:not(:disabled) {
+  background: var(--lj-quiet);
+}
+.lj-period-cards {
+  border: 1px solid var(--lj-line);
+  border-radius: 11px;
+  background: var(--lj-card);
+  padding: 0 16px;
+  box-shadow: 0 3px 9px #1a344507;
+}
+.lj-period-cards > button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 91px;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--lj-line);
+  text-align: left;
+}
+.lj-period-cards > button:last-child {
+  border-bottom: 0;
+}
+.lj-period-cards > button > span:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lj-period-cards strong {
+  font-size: 14px;
+  font-weight: 550;
+}
+.lj-period-cards small {
+  color: var(--lj-muted);
+  font-size: 11px;
+}
+.lj-period-values {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 95px;
+  align-items: flex-end;
+  font:
+    500 14px 'Segoe UI',
+    sans-serif;
+}
+.lj-period-values > span {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.lj-period-values small {
+  font:
+    10px 'Microsoft YaHei',
+    sans-serif;
+}
+.lj-period-cards > button > svg {
+  color: var(--lj-muted);
+}
+.lj-accent-amount {
+  color: var(--lj-accent-text);
+}
+.lj-dashboard-import {
+  display: flex;
+  gap: 13px;
+  margin: 5px 24px 20px;
+  border: 1px dashed var(--lj-line);
+  background: var(--lj-quiet);
+  padding: 15px;
+  border-radius: 10px;
+}
+.lj-dashboard-import > svg {
+  color: var(--lj-accent-text);
+  margin-top: 4px;
+}
+.lj-dashboard-import h2 {
+  font-size: 14px;
+  font-weight: 550;
+}
+.lj-dashboard-import p {
+  color: var(--lj-muted);
+  font-size: 11px;
+  line-height: 1.8;
+  margin-top: 6px;
+}
+.lj-dashboard-note {
+  margin: 0 24px 25px !important;
+  color: var(--lj-muted);
+  font-size: 10px;
+  line-height: 1.8;
+}
+.lj-dashboard-bar {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  min-height: 70px;
+  align-items: center;
+  background: var(--lj-card);
+  border-top: 1px solid var(--lj-line);
+  padding: 6px 5px 4px;
+  box-shadow: 0 -2px 12px #273c4708;
+}
+.lj-dashboard-bar > div {
+  display: flex;
+  margin-left: auto;
+}
+.lj-dashboard-bar button:not(.lj-dashboard-record) {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+  width: 48px;
+  min-height: 50px;
+  color: var(--lj-secondary);
+  padding: 5px 3px;
+}
+.lj-dashboard-bar button > span {
+  font-size: 9px;
+}
+.lj-dashboard-record {
+  position: absolute;
+  left: 50%;
+  top: -24px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  border: 5px solid var(--lj-page) !important;
+  background: var(--lj-accent) !important;
+  color: var(--lj-on-accent, #fff) !important;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px #233c4b28;
+}
+.lj-dashboard-record:active {
+  transform: translateX(-50%) scale(0.96);
+}
+.lj-dashboard-bar .lj-dashboard-menu {
+  margin-left: 6px;
+}
+.lj-home-layout-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+  margin: 14px 0 24px;
+}
+.lj-home-layout-picker > button {
+  border: 1px solid var(--lj-line) !important;
+  border-radius: 12px;
+  padding: 19px 12px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 9px;
+  color: var(--lj-secondary);
+}
+.lj-home-layout-picker > button.selected {
+  border-color: var(--lj-accent) !important;
+  background: var(--lj-accent-soft) !important;
+  color: var(--lj-accent-text);
+}
+.lj-home-layout-picker strong {
+  font-size: 14px;
+  font-weight: 550;
+}
+.lj-home-layout-picker small {
+  color: var(--lj-muted);
+  font-size: 10px;
+  text-align: center;
+}
+.lj-palette-heading {
+  margin-top: 20px !important;
+}
+.lj-color-picker {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 9px 3px;
+  margin: 12px 0 22px;
+}
+.lj-color-picker > button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  align-items: center;
+  min-height: 58px;
+  border-radius: 7px;
+  color: var(--lj-secondary);
+  padding: 6px 2px;
+  font-size: 10px;
+}
+.lj-color-picker > button > span {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px var(--lj-card);
+}
+.lj-color-picker > button.selected {
+  background: var(--lj-quiet);
+}
+.lj-color-picker > button.selected > span {
+  outline: 1px solid var(--lj-accent);
+  outline-offset: 3px;
+}
+.lj-color-picker > button > svg {
+  position: absolute;
+  right: 8px;
+  top: 22px;
+  background: var(--lj-card);
+  border-radius: 50%;
+  color: var(--lj-accent-text);
+}
+.lj-people-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.lj-person-card {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--lj-line);
+  border-radius: 12px;
+  background: var(--lj-card);
+  padding: 8px 7px 8px 13px;
+}
+.lj-person-records {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex: 1;
+  min-width: 0;
+  padding: 10px 0;
+  text-align: left;
+}
+.lj-person-records > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.lj-person-records strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+.lj-person-records small {
+  display: block;
+  margin-top: 6px;
+  color: var(--lj-muted);
+  font-size: 11px;
+}
+.lj-person-records i {
+  font-style: normal;
+  font-size: 9px;
+  color: var(--lj-muted);
+  margin-left: 6px;
+  font-weight: 400;
+}
+.lj-person-avatar {
+  display: grid;
+  place-items: center;
+  width: 39px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--lj-accent-soft);
+  color: var(--lj-accent-text);
+  flex-shrink: 0;
+}
+.lj-person-records > svg {
+  color: var(--lj-muted);
+  margin: 0 4px;
+}
+.lj-entry-member {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--lj-line);
+  padding: 7px 1px;
+}
+.lj-entry-member > svg {
+  color: var(--lj-muted);
+}
+.lj-entry-member > label {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex: 1;
+  min-width: 0;
+}
+.lj-entry-member label > span {
+  color: var(--lj-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.lj-entry-member select {
+  border: 0;
+  background: transparent;
+  color: var(--lj-text);
+  width: 100%;
+  font-size: 13px;
+  padding: 8px 0;
+}
+.lj-entry-member > .lj-icon-button {
+  width: 32px;
+  height: 32px;
+}
+.lj-loan-panel {
+  border: 1px solid var(--lj-line);
+  border-radius: 12px;
+  padding: 13px;
+  margin-bottom: 11px;
+  background: var(--lj-card);
+}
+.lj-loan-types {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  margin-bottom: 17px;
+}
+.lj-loan-types > button {
+  padding: 11px 4px;
+  min-height: 58px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  border-radius: 7px;
+  color: var(--lj-secondary);
+  font-size: 13px;
+}
+.lj-loan-types > button.selected {
+  background: var(--lj-accent-soft);
+  color: var(--lj-accent-text);
+}
+.lj-loan-panel .lj-help {
+  margin-bottom: 0;
+  margin-top: 6px;
+}
+.lj-loan-panel > .lj-text-button {
+  padding-bottom: 0;
+}
+.lj-loan-balance-summary {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+  border: 1px solid var(--lj-line) !important;
+  border-radius: 12px;
+  padding: 15px !important;
+  margin-bottom: 6px;
+  background: var(--lj-card) !important;
+  text-align: left;
+}
+.lj-loan-balance-summary > span:first-child {
+  flex: 1;
+  color: var(--lj-muted);
+  font-size: 11px;
+}
+.lj-loan-balance-summary strong {
+  display: block;
+  margin-top: 7px;
+  color: var(--lj-text);
+  font:
+    500 21px 'Segoe UI',
+    sans-serif;
+}
+.lj-loan-balance-summary > span:nth-child(2) {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--lj-secondary);
+}
+.lj-loan-balance-summary small {
+  font-size: 10px;
+}
+.lj-loan-balance-summary > svg {
+  color: var(--lj-muted);
+}
+.lj-income-selector {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  align-content: start;
+  min-height: 160px;
+  max-height: 210px;
+  overflow-y: auto;
+  border: 1px solid var(--lj-line);
+  padding: 9px;
+  border-radius: 11px;
+  margin-bottom: 8px;
+}
+.lj-income-selector > button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 49px;
+  text-align: left;
+  padding: 10px 8px;
+  border-radius: 7px;
+  font-size: 13px;
+  color: var(--lj-secondary);
+}
+.lj-income-selector > button > span {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.lj-income-selector > button > span > small {
+  display: block;
+  font-size: 9px;
+  color: var(--lj-muted);
+}
+.lj-income-selector > button.selected {
+  background: var(--lj-accent-soft);
+  color: var(--lj-accent-text);
+}
+.lj-income-selector > .lj-category-add,
+.lj-income-selector > .lj-help {
+  grid-column: 1/-1;
+}
+.lj-income-management {
+  border: 1px solid var(--lj-line);
+  border-radius: 12px;
+  background: var(--lj-card);
+  padding: 0 13px;
+}
+.lj-transaction-icon.loan {
+  background: var(--lj-quiet);
+  color: var(--lj-accent-text);
+}
+.lj-transaction-amount.loan-in {
+  color: var(--lj-green);
+}
+.lj-people-filters {
+  padding-top: 0 !important;
+}
+.lj-keyboard-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+  padding: 0 3px 5px;
+}
+.lj-keyboard-toolbar > span {
+  color: var(--lj-muted);
+  font-size: 10px;
+}
+.lj-keyboard-toolbar > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--lj-accent-text);
+  padding: 7px;
+  font-size: 11px;
+}
+@media (min-width: 781px) {
+  .lj-dashboard-header,
+  .lj-dashboard-section {
+    padding-left: 36px;
+    padding-right: 36px;
+  }
+  .lj-dashboard-hero {
+    height: 242px;
+  }
+  .lj-dashboard-bar > div > button {
+    width: 61px;
+  }
+  .lj-dashboard-import {
+    margin-left: 36px;
+    margin-right: 36px;
+  }
+}
+@media (max-width: 360px) {
+  .lj-dashboard-bar > div > button {
+    width: 42px;
+  }
+  .lj-dashboard-record {
+    width: 62px;
+    height: 62px;
+  }
+  .lj-dashboard-section {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
