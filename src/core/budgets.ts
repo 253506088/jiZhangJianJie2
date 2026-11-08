@@ -175,7 +175,9 @@ export function periodBudgetProgress(
   const effective = effectiveBudgetAllocation(state, budgets);
   const spending = periodSpending(state, bookId, range, effective.coveredLeafIds);
   const remainingCents =
-    effective.limitCents === null ? null : addCents(effective.limitCents, -spending.coveredSpentCents);
+    effective.limitCents === null
+      ? null
+      : addCents(effective.limitCents, -spending.coveredSpentCents);
   return {
     period,
     range,
