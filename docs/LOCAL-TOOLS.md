@@ -33,12 +33,14 @@
 - 清理时先核对 AVD 名称、实时进程命令行与 owner.json；只停止这个 AVD、5051 adb 和其端口转发。然后可删除这个项目专属 `.tools/native-test` 目录。最后单独核对并移除 ASCII 联接本身，禁止递归穿越联接。
 - 此目录含自动化生成的 10,000 笔虚构压力数据、截图和测试备份。它们不进入 Git，也不是正式用户账本。
 - `scripts/native/` 中的脚本会校验该 AVD 身份；部分脚本会写入虚构数据，仅供隔离验收，不能改为连接用户手机运行。
+- 2026-11-09完成最终Release验收后，已正常停止本项目AVD、5051专用adb和9238调试转发；复核无相关残留进程。旧版ARM/5039也已停止。D盘镜像、AVD磁盘、原始证据和虚构测试备份保留，未执行删除。
 
 ## 前端与安卓构建
 
 - Node.js 使用原有 24.13.0，不切换 nvm，也不依赖 REA 自带的 24.22.2。
 - npm 已设置项目级 `.npmrc`，今后本项目包缓存写入 `.tools/npm-cache`（D盘）；不会清空系统共享 npm 缓存。
 - 浏览器自动化的临时 profile、下载缓存和跟踪结果在 `.tools/test-tmp`、`.tools/e2e-results`（D盘），不使用用户浏览器 profile。
+- 正式Web预览使用127.0.0.1:5173；当前保留本项目Vite进程便于查看。以后不需要时，先核对5173监听进程的命令行确实指向本目录node_modules/vite，再停止该进程；不要批量结束其他Node项目。
 - Android 构建复用已有 JDK21：`C:\Users\black\.jdks\corretto-21.0.10`，仅设置构建进程的 JAVA_HOME/PATH。
 - 初次插件编译复用了原有 Gradle 用户缓存。后续实际构建已改用 D 盘项目专属缓存；Windows在中文路径缓存中出现Gradle临时目录移动失败，因此缓存从 `.tools/gradle-home` 移到了 **`D:\code\my\2\.jizhang-gradle-cache`**（ASCII路径），并写入 `jizhang-owner.json` 标识所属项目。应用源代码没有搬走。
 - 构建临时目录也位于该D盘缓存内的 `build-tmp`；构建脚本可通过 `-BuildCache` 显式指定另一个目录。没有通过回退到C盘解决缓存问题，也没有删除或改动其他项目共用的Gradle/SDK安装。
