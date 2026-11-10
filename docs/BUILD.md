@@ -4,6 +4,8 @@
 
 `artifacts/jizhang-jianjie2-release.apk`
 
+同时生成带名称与版本的同内容副本，例如 `artifacts/简洁记账·新-1.0.1-release.apk`。根目录的“简洁记账.apk”是保留的原版4.8.8，不能用它验证新版；新旧包名不同，可并存。
+
 窗口会保留完整错误或成功信息。首次构建需要下载依赖，后续会复用 D 盘缓存。脚本会编译前端、同步 Capacitor、构建 Release、验证签名与16KB对齐；任一步失败都会返回非零退出码，旧APK不能当作这次成功的产物。
 
 无交互终端/自动化可运行 `build-apk.bat --no-pause`。

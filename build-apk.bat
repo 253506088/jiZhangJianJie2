@@ -34,6 +34,7 @@ echo.
 echo SUCCESS: Signed APK built and verified.
 echo APK: %~dp0artifacts\jizhang-jianjie2-release.apk
 echo Build details: %~dp0artifacts\release-build.json
+echo The versioned APK is in artifacts. Original APKs in the project root are NOT this build.
 echo Keep .local\signing safe: future updates need the same signing key.
 if /i not "%~1"=="--no-pause" pause
 exit /b 0

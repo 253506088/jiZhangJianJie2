@@ -35,7 +35,17 @@
 - `scripts/native/` 中的脚本会校验该 AVD 身份；部分脚本会写入虚构数据，仅供隔离验收，不能改为连接用户手机运行。
 - 2026-11-09完成最终Release验收后，已正常停止本项目AVD、5051专用adb和9238调试转发；复核无相关残留进程。旧版ARM/5039也已停止。D盘镜像、AVD磁盘、原始证据和虚构测试备份保留，未执行删除。
 
-## 前端与安卓构建
+## Android12 / MuMu 启动兼容性复测
+
+- 2026-11-10为排查用户反馈的启动问题，使用已有 `D:\MuMuPlayer\nx_main\MuMuManager.exe` 新建空白测试实例，未克隆用户原实例。后续仅核对原实例0的系统版本/安装包，并在缺少新版包时安装1.0.1；不读取旧App的账本、备份或数据库。
+- 本项目实例：index **1**，名称 **jianjie_compat12**；磁盘位于 `D:\MuMuPlayer\vms\MuMuPlayer-12.0-1`，采用mini动态磁盘。所有权和创建时间记录在 `.tools/mumu-compat/owner.json`。
+- 专用adb server为5052，测试实例Android端口由MuMuManager的info查询（本次16416），调试转发9239。只能在owner身份一致时操作；用户原实例0的系统版本/包名核对不读取应用数据。
+- 只安装本项目APK、录入虚构记录；不读取用户原实例的账本、备份或应用数据。
+- 不需要时先用 `MuMuManager.exe info -v 1` 核对名称和创建时间与owner记录一致，再用 `MuMuManager.exe control -v 1 shutdown` 停止；确认后可用 `MuMuManager.exe delete -v 1` 删除这个测试实例。不要对原实例0执行删除，也不要删除整个MuMu安装目录。
+- SDK/JDK/Node仍复用原环境；本次没有安装另一套模拟器程序，也不新增C盘虚拟磁盘。
+- 1.0.1验收结束后已停止专用实例1、9239转发和5052 adb；约522MB的测试磁盘仍保留在D盘。用户原实例0保留运行，当前打开新版首页，便于用户体验。
+
+## 前端与安卓构建（原环境）
 
 - Node.js 使用原有 24.13.0，不切换 nvm，也不依赖 REA 自带的 24.22.2。
 - npm 已设置项目级 `.npmrc`，今后本项目包缓存写入 `.tools/npm-cache`（D盘）；不会清空系统共享 npm 缓存。

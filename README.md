@@ -8,7 +8,9 @@
 
 **双击根目录 `build-apk.bat`**，生成 `artifacts/jizhang-jianjie2-release.apk`。窗口显示结果，APK经过签名和对齐校验。首次需下载依赖，之后使用D盘缓存。
 
-将APK传到手机，使用系统安装器安装。包名 `dev.keepaccounts.jianjie2`，与原版可同时保留。支持Android7.0及以上，需Android System WebView111或更新版本；旧组件会显示更新提示。
+**请安装artifacts里的新版，不要安装根目录的“简洁记账.apk”——后者是保留的原版4.8.8。** 构建同时生成带名称和版本的文件，例如 `artifacts/简洁记账·新-1.0.1-release.apk`，方便区分。
+
+将APK传到手机，使用系统安装器安装。包名 `dev.keepaccounts.jianjie2`，与原版可同时保留。支持Android7.0及以上，需Android System WebView100或更新版本；更旧组件会显示更新提示。1.0.1已补充MuMu Android12内置WebView110的实际兼容性验证。
 
 详见 [构建和签名说明](docs/BUILD.md)。**请安全备份 `.local/signing`；以后覆盖更新必须保留同一私钥。** 签名密码和私钥不进入Git。
 

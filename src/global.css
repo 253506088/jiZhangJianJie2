@@ -123,6 +123,7 @@ svg {
   color: #768473;
 }
 .root-boot {
+  min-height: 100vh;
   min-height: 100dvh;
   display: flex;
   align-items: center;

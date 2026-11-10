@@ -45,8 +45,16 @@ try {
   & (Join-Path $SdkPath 'build-tools\36.1.0\zipalign.exe') -c -P 16 4 $destination
   if ($LASTEXITCODE -ne 0) { throw 'APK alignment verification failed.' }
   $hash=(Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash.ToLowerInvariant()
-  [ordered]@{file=[IO.Path]::GetFileName($destination);sha256=$hash;bytes=(Get-Item -LiteralPath $destination).Length;variant=$variant;builtAt=[DateTimeOffset]::Now.ToString('o')} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $artifacts ($variant+'-build.json')) -Encoding utf8
+  $packageInfo=Get-Content -LiteralPath (Join-Path $projectRoot 'package.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+  $nativeInfo=Get-Content -LiteralPath (Join-Path $projectRoot 'android\app\src\main\assets\capacitor.config.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+  $label=([string]$nativeInfo.appName) -replace '[\\/:*?"<>|]', '_'
+  $version=[string]$packageInfo.version
+  if ($version -notmatch '^\d+\.\d+\.\d+([.-][0-9A-Za-z.-]+)?$') { throw 'Invalid application version.' }
+  $versioned=Join-Path $artifacts ($label+'-'+$version+'-'+$variant+'.apk')
+  Copy-Item -LiteralPath $destination -Destination $versioned -Force
+  [ordered]@{file=[IO.Path]::GetFileName($destination);versionedFile=[IO.Path]::GetFileName($versioned);version=$version;sha256=$hash;bytes=(Get-Item -LiteralPath $destination).Length;variant=$variant;builtAt=[DateTimeOffset]::Now.ToString('o')} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $artifacts ($variant+'-build.json')) -Encoding utf8
   Write-Output ('APK: '+$destination)
+  Write-Output ('Versioned APK: '+$versioned)
   Write-Output ('SHA256: '+$hash)
 } finally {
   Pop-Location

@@ -1,4 +1,6 @@
-# 1.0.0 验收与交付依据
+# 1.0.0 历史验收与交付依据
+
+当前版本已更新至1.0.1，MuMu兼容性修复、对应APK及验证记录见 [MUMU-COMPAT.md](MUMU-COMPAT.md)。本文件保留1.0.0的历史证据，不代表后续版本APK的摘要。
 
 核对日期：2026-11-09。所有流水、联系人、导出文件和测试数据库均为虚构。没有读取用户真实Excel、备份或手机数据。
 
@@ -6,7 +8,7 @@
 
 | 项目 | 值 |
 | --- | --- |
-| 文件 | artifacts/jizhang-jianjie2-release.apk |
+| 保留的历史文件 | .tools/mumu-compat/baseline-1.0.0.apk（不进Git） |
 | 版本 | 1.0.0 / versionCode 1 |
 | 包名 | dev.keepaccounts.jianjie2 |
 | 大小 | 4,702,458 字节 |

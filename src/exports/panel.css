@@ -8,6 +8,7 @@
   --xe-soft: #e4f5fc;
   --xe-button: #087da5;
   width: min(670px, calc(100vw - 36px));
+  max-height: calc(100vh - 36px);
   max-height: calc(100dvh - 36px);
   padding: 0;
   border: 1px solid var(--xe-line);
@@ -374,7 +375,9 @@
   .excel-export-panel {
     width: 100vw;
     max-width: none;
+    height: 100vh;
     height: 100dvh;
+    max-height: 100vh;
     max-height: 100dvh;
     inset: 0;
     margin: 0;

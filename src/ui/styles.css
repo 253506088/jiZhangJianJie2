@@ -14,6 +14,7 @@
   --lj-green-soft: #eaf3ed;
   --lj-danger: #b74e42;
   --lj-shadow: 0 10px 38px #3345270b;
+  height: 100vh;
   height: 100dvh;
   min-height: 0;
   max-width: 1160px;
@@ -1385,6 +1386,7 @@
   border-radius: 18px;
   box-shadow: 0 20px 55px #15251c33;
   width: min(430px, calc(100vw - 30px));
+  max-height: min(88vh, 900px);
   max-height: min(88dvh, 900px);
   overflow-y: auto;
   margin: auto;
@@ -2343,6 +2345,7 @@
     padding: 0 20px 10px;
   }
   .lj-category-selector {
+    height: clamp(158px, 25vh, 224px);
     height: clamp(158px, 25dvh, 224px);
   }
   .lj-parent-categories > button {
@@ -2365,6 +2368,7 @@
   }
   .lj-calculator button {
     min-height: 40px;
+    height: clamp(40px, 5.7vh, 51px);
     height: clamp(40px, 5.7dvh, 51px);
   }
   .lj-save-actions > button {

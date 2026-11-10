@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   backgroundColor: '#faf9f6',
   loggingBehavior: 'none',
-  android: { backgroundColor: '#faf9f6', minWebViewVersion: 111 },
+  android: { backgroundColor: '#faf9f6', minWebViewVersion: 100 },
   server: { errorPath: 'webview-error.html' },
 };
 

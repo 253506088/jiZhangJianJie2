@@ -13,6 +13,7 @@
   background: var(--bk-page);
   font-family: Inter, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   width: min(690px, calc(100vw - 36px));
+  max-height: calc(100vh - 36px);
   max-height: calc(100dvh - 36px);
   padding: 0;
   border: 1px solid var(--bk-line);
@@ -514,7 +515,9 @@
   .backup-panel {
     width: 100vw;
     max-width: none;
+    height: 100vh;
     height: 100dvh;
+    max-height: 100vh;
     max-height: 100dvh;
     inset: 0;
     margin: 0;

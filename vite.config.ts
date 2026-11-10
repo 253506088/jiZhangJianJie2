@@ -7,6 +7,8 @@ const privateExports =
 
 export default defineConfig({
   plugins: [react()],
+  // Match the supported WebView floor instead of Vite's moving browser baseline.
+  build: { target: 'chrome100', cssTarget: 'chrome100' },
   server: {
     port: 5173,
     strictPort: true,
