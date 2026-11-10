@@ -1,0 +1,139 @@
+.lj-entry-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 12px;
+}
+.lj-entry-tools .lj-entry-types {
+  flex: 0 0 auto;
+  margin: 0;
+  gap: 1px;
+  padding: 3px;
+}
+.lj-editor .lj-entry-types button {
+  min-width: 38px;
+  min-height: 40px;
+  padding: 5px 6px;
+  font-size: 13px;
+}
+.lj-category-search {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 7px;
+  border: 1px solid var(--lj-line);
+  border-radius: 10px;
+  color: var(--lj-muted);
+  background: var(--lj-card);
+}
+.lj-category-search > svg {
+  flex: 0 0 auto;
+}
+.lj-category-search input {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  border: 0;
+  padding: 0;
+  outline: none;
+  color: var(--lj-text);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+}
+.lj-category-search:focus-within {
+  border-color: var(--lj-accent);
+}
+.lj-category-search input:focus-visible {
+  outline: none;
+}
+.lj-category-search input::-webkit-search-cancel-button {
+  display: none;
+}
+.lj-category-search button {
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  min-height: 38px;
+}
+.lj-category-results {
+  height: clamp(158px, 25vh, 270px);
+  overflow-y: auto;
+  padding: 6px 8px;
+  border: 1px solid var(--lj-line);
+  border-radius: 12px;
+  background: var(--lj-card);
+}
+.lj-category-search-summary {
+  margin: 7px 6px;
+  color: var(--lj-muted);
+  font-size: 11px;
+}
+.lj-category-results > button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 10px;
+  border-radius: 8px;
+  text-align: left;
+  color: var(--lj-text);
+}
+.lj-category-results > button > span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+.lj-category-results small {
+  margin-left: 6px;
+  font-size: 10px;
+  color: var(--lj-muted);
+}
+.lj-category-results > button.selected {
+  color: var(--lj-accent-text);
+  background: var(--lj-accent-soft);
+}
+.lj-calculation-help {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px 10px;
+  margin: 3px 0 0;
+  color: var(--lj-muted);
+  font-size: 10px;
+}
+.lj-calculation-help output {
+  color: var(--lj-accent-text);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.lj-editor .lj-calculator {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.lj-editor .lj-calculator .equals {
+  grid-column: 5;
+  grid-row: 3 / span 2;
+  height: 100%;
+}
+.lj-editor .lj-calculator .zero {
+  grid-column: 1 / span 2;
+}
+@media (max-width: 360px) {
+  .lj-entry-tools {
+    gap: 5px;
+  }
+  .lj-editor .lj-entry-types button {
+    min-width: 34px;
+    padding-inline: 4px;
+    font-size: 12px;
+  }
+  .lj-category-search {
+    padding-inline: 5px;
+  }
+}

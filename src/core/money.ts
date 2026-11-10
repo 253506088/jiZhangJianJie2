@@ -28,18 +28,7 @@ export function parseMoneyToCents(
   return cents;
 }
 
-export function evaluateMoneyExpression(expression: string): number {
-  const parts = expression.replace(/\s/g, '').split(/([+-])/);
-  if (!parts[0] || parts.length > 99) throw new LedgerError('请填写有效金额', 'INVALID_AMOUNT');
-  let cents = parseMoneyToCents(parts[0], { allowZero: true });
-  for (let index = 1; index < parts.length; index += 2) {
-    const operand = parseMoneyToCents(parts[index + 1], { allowZero: true });
-    cents = addCents(cents, operand * (parts[index] === '-' ? -1 : 1));
-  }
-  if (cents <= 0 || cents > MAX_AMOUNT_CENTS)
-    throw new LedgerError('金额必须大于零且在支持范围内', 'INVALID_AMOUNT');
-  return cents;
-}
+export { evaluateMoneyExpression } from './money-expression';
 
 export function moneyInput(cents: number): string {
   if (!Number.isSafeInteger(cents)) throw new LedgerError('金额不在安全范围内', 'INVALID_AMOUNT');

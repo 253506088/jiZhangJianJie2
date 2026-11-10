@@ -28,7 +28,9 @@ import {
   assertTransactionUnchanged,
   resolveEditorSelection,
   nextExpenseCategory,
+  searchEntryCategories,
 } from './editor-state';
+import './editor-enhancements.css';
 
 function initialTime() {
   return new Date().toTimeString().slice(0, 5);
@@ -74,6 +76,7 @@ export function Editor({
   const [direction, setDirection] = useState<TransactionDirection>(seedDirection);
   const [parentId, setParentId] = useState(seedParent);
   const [categoryId, setCategoryId] = useState(seedCategoryId);
+  const [categoryQuery, setCategoryQuery] = useState('');
   const [accountId, setAccountId] = useState(
     seedDirection === 'loan' ? selectionSeed.loanAccountId : selectionSeed.ordinary.accountId,
   );
@@ -143,6 +146,23 @@ export function Editor({
       ? incomeCategories.find((category) => category.id === categoryId)
       : selectedChild;
   const isCategorized = direction === 'expense' || direction === 'income';
+  const categoryResults = isCategorized
+    ? searchEntryCategories(
+        state,
+        bookId,
+        direction,
+        categoryQuery,
+        originalTransaction?.categoryId ?? originalTemplate?.categoryId,
+      )
+    : [];
+  let calculatedAmount: string | undefined;
+  if (/[+\-*/×÷−]/.test(expression)) {
+    try {
+      calculatedAmount = moneyInput(evaluateMoneyExpression(expression));
+    } catch {
+      // Incomplete expressions are expected during entry; explain them on calculate/save.
+    }
+  }
   const members = state.members
     .filter(
       (member) =>
@@ -205,6 +225,7 @@ export function Editor({
     }
     if (direction === 'expense' && chosenCategory) lastExpenseCategory.current = chosenCategory.id;
     setDirection(next);
+    setCategoryQuery('');
     setError('');
     if (next === 'expense' || next === 'income') {
       const root = activeCategories(state, bookId, next)[0];
@@ -244,16 +265,25 @@ export function Editor({
       }
       return;
     }
-    if (key === '+' || key === '-') {
+    if (['+', '-', '×', '÷'].includes(key)) {
       if (expression)
-        setExpression((value) => (/[+-]$/.test(value) ? value.slice(0, -1) + key : value + key));
+        setExpression((value) =>
+          /[+\-×÷*/]$/.test(value)
+            ? value.slice(0, -1) + key
+            : value.length < 160
+              ? value + key
+              : value,
+        );
       return;
     }
     setExpression((value) => {
-      const token = value.split(/[+-]/).at(-1) ?? '';
-      if (key === '.') return token.includes('.') ? value : value + (token ? '.' : '0.');
+      if (value.length >= 160) return value;
+      const token = value.split(/[+\-×÷*/]/).at(-1) ?? '';
+      if (key === '.') {
+        const next = value + (token ? '.' : '0.');
+        return token.includes('.') || next.length > 160 ? value : next;
+      }
       if (
-        value.length > 160 ||
         (token.includes('.') && token.split('.')[1].length >= 2) ||
         (!token.includes('.') && token.length >= 9)
       )
@@ -350,6 +380,7 @@ export function Editor({
     if (saved) {
       if (again) {
         setExpression('');
+        setCategoryQuery('');
         setNote('');
         setDate(localDate());
         setTime(initialTime());
@@ -399,30 +430,52 @@ export function Editor({
         }
       />
       <fieldset className="lj-editor-content" disabled={busy} aria-label="记账信息">
-        <div className="lj-segment" aria-label="记账类型">
-          {(
-            [
-              'expense',
-              'income',
-              ...(!templateOnly ? ['transfer', 'loan'] : []),
-            ] as TransactionDirection[]
-          ).map((value) => (
-            <button
-              key={value}
-              className={direction === value ? 'selected' : ''}
-              aria-pressed={direction === value}
-              disabled={busy}
-              onClick={() => selectDirection(value)}
-            >
-              {value === 'expense'
-                ? '支出'
-                : value === 'income'
-                  ? '收入'
-                  : value === 'transfer'
-                    ? '转账'
-                    : '借贷'}
-            </button>
-          ))}
+        <div className="lj-entry-tools">
+          <div className="lj-segment lj-entry-types" role="group" aria-label="记账类型">
+            {(
+              [
+                'expense',
+                'income',
+                ...(!templateOnly ? ['transfer', 'loan'] : []),
+              ] as TransactionDirection[]
+            ).map((value) => (
+              <button
+                key={value}
+                className={direction === value ? 'selected' : ''}
+                aria-pressed={direction === value}
+                disabled={busy}
+                onClick={() => selectDirection(value)}
+              >
+                {value === 'expense'
+                  ? '支出'
+                  : value === 'income'
+                    ? '收入'
+                    : value === 'transfer'
+                      ? '转账'
+                      : '借贷'}
+              </button>
+            ))}
+          </div>
+          {isCategorized && (
+            <div className="lj-category-search">
+              <Icon name="search" size={16} />
+              <input
+                aria-label="搜索分类"
+                placeholder="搜索分类"
+                type="search"
+                autoComplete="off"
+                value={categoryQuery}
+                maxLength={120}
+                onFocus={() => setKeyboardOpen(false)}
+                onChange={(event) => setCategoryQuery(event.target.value)}
+              />
+              {categoryQuery && (
+                <button aria-label="清除分类搜索" onClick={() => setCategoryQuery('')}>
+                  <Icon name="close" size={15} />
+                </button>
+              )}
+            </div>
+          )}
         </div>
         {templateOnly && (
           <Field label="模板名称">
@@ -436,7 +489,37 @@ export function Editor({
             />
           </Field>
         )}
-        {direction === 'loan' ? (
+        {isCategorized && categoryQuery.trim() ? (
+          <section className="lj-category-results" aria-label="分类搜索结果">
+            <p className="lj-category-search-summary" role="status">
+              {categoryResults.length
+                ? `找到 ${categoryResults.length} 个分类 · 已搜索全部一级分类`
+                : '没有找到分类，试试其他关键词'}
+            </p>
+            {categoryResults.map(({ category, parent, path }) => (
+              <button
+                key={category.id}
+                aria-label={path}
+                aria-pressed={chosenCategory?.id === category.id}
+                className={chosenCategory?.id === category.id ? 'selected' : ''}
+                onClick={() => {
+                  setParentId(parent.id);
+                  setCategoryId(category.id);
+                  setCategoryQuery('');
+                  setKeyboardOpen(true);
+                  requestAnimationFrame(() => amountInput.current?.focus({ preventScroll: true }));
+                }}
+              >
+                <Icon name={category.icon} size={21} />
+                <span>
+                  {path}
+                  {(category.archived || parent.archived) && <small>已归档</small>}
+                </span>
+                {chosenCategory?.id === category.id && <Icon name="check" size={17} />}
+              </button>
+            ))}
+          </section>
+        ) : direction === 'loan' ? (
           <section className="lj-loan-panel">
             <div className="lj-loan-types" aria-label="借贷类型">
               {(Object.entries(loanLabels) as [LoanType, string][]).map(([value, label]) => (
@@ -651,6 +734,7 @@ export function Editor({
               aria-label="金额"
               inputMode="none"
               autoComplete="off"
+              maxLength={160}
               placeholder="0.00"
               value={expression}
               onFocus={(event) => {
@@ -660,10 +744,17 @@ export function Editor({
               }}
               onClick={() => setKeyboardOpen(true)}
               onChange={(event) => {
-                if (/^[\d.+-]{0,160}$/.test(event.target.value)) setExpression(event.target.value);
+                if (/^[\d.\s+\-*/×÷−]{0,160}$/.test(event.target.value)) {
+                  setExpression(event.target.value);
+                  setError('');
+                }
               }}
             />
           </div>
+          <p className="lj-calculation-help">
+            {calculatedAmount && <output aria-label="计算预览">= ¥{calculatedAmount}</output>}
+            <span>先乘除后加减，结果四舍五入到分</span>
+          </p>
         </div>
         <div className="lj-entry-account">
           <Icon name="wallet" size={18} />
@@ -796,24 +887,26 @@ export function Editor({
               '7',
               '8',
               '9',
-              '+',
+              '÷',
+              'C',
               '4',
               '5',
               '6',
-              '-',
+              '×',
+              'delete',
               '1',
               '2',
               '3',
-              'delete',
-              'C',
+              '-',
+              '=',
               '0',
               '.',
-              '=',
+              '+',
             ].map((key) => (
               <button
                 disabled={busy}
                 key={key}
-                className={`${['+', '-', '='].includes(key) ? 'operator' : ''} ${key === '=' ? 'equals' : ''}`}
+                className={`${['+', '-', '×', '÷', '='].includes(key) ? 'operator' : ''} ${key === '=' ? 'equals' : key === '0' ? 'zero' : ''}`}
                 aria-label={
                   key === 'delete'
                     ? '退格'
@@ -825,7 +918,11 @@ export function Editor({
                           ? '加'
                           : key === '-'
                             ? '减'
-                            : key
+                            : key === '×'
+                              ? '乘'
+                              : key === '÷'
+                                ? '除'
+                                : key
                 }
                 onClick={() => pressKey(key)}
               >

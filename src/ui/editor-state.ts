@@ -1,5 +1,48 @@
 import type { LedgerState, Transaction, TransactionDirection, TransactionTemplate } from '../core';
 
+/** Search leaf identities across every parent in this book and direction. */
+export function searchEntryCategories(
+  state: LedgerState,
+  bookId: string,
+  direction: 'expense' | 'income',
+  query: string,
+  retainedCategoryId?: string | null,
+) {
+  const terms = query.trim().toLocaleLowerCase('zh-CN').split(/\s+/).filter(Boolean);
+  if (!terms.length) return [];
+  const parents = new Map(
+    state.categories
+      .filter(
+        (category) =>
+          category.bookId === bookId &&
+          category.direction === direction &&
+          category.parentId === null,
+      )
+      .map((category) => [category.id, category]),
+  );
+  return state.categories
+    .flatMap((category) => {
+      const parent = category.parentId === null ? undefined : parents.get(category.parentId);
+      if (
+        !parent ||
+        category.bookId !== bookId ||
+        category.direction !== direction ||
+        ((category.archived || parent.archived) && category.id !== retainedCategoryId)
+      )
+        return [];
+      const path = `${parent.name} / ${category.name}`;
+      if (!terms.every((term) => path.toLocaleLowerCase('zh-CN').includes(term))) return [];
+      return [{ category, parent, path }];
+    })
+    .sort(
+      (a, b) =>
+        a.parent.sortOrder - b.parent.sortOrder ||
+        a.parent.name.localeCompare(b.parent.name, 'zh-CN') ||
+        a.category.sortOrder - b.category.sortOrder ||
+        a.category.name.localeCompare(b.category.name, 'zh-CN'),
+    );
+}
+
 /** Compare only stored record identity/content, never the display name of its linked category. */
 export function transactionEditVersion(transaction: Transaction): string {
   return JSON.stringify([
