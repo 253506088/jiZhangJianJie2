@@ -39,7 +39,18 @@ const firstRoute: NavigationEntry = { id: 'home', route: { screen: 'home' } };
 
 export const ProductionApp = forwardRef<ProductionAppHandle, ProductionAppProps>(
   function ProductionApp(
-    { state, busy, mutate, onImport, onExport, onExcelExport, onRestore, onHistory, dataTools },
+    {
+      state,
+      busy,
+      mutate,
+      onImport,
+      onExport,
+      onExcelExport,
+      onReconcile,
+      onRestore,
+      onHistory,
+      dataTools,
+    },
     ref,
   ) {
     const [routes, setRoutes] = useState<NavigationEntry[]>([firstRoute]);
@@ -311,6 +322,7 @@ export const ProductionApp = forwardRef<ProductionAppHandle, ProductionAppProps>
           onImport={onImport}
           onExport={onExport}
           onExcelExport={onExcelExport}
+          onReconcile={onReconcile}
           onRestore={onRestore}
           onHistory={onHistory}
           dataTools={dataTools}

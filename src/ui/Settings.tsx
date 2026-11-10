@@ -32,6 +32,7 @@ export function DataSettings({
   onImport,
   onExport,
   onExcelExport,
+  onReconcile,
   onRestore,
   onHistory,
   dataTools,
@@ -41,6 +42,7 @@ export function DataSettings({
   onImport: () => void;
   onExport: () => void;
   onExcelExport?: () => void;
+  onReconcile?: () => void;
   onRestore: () => void;
   onHistory: () => void;
   dataTools?: ReactNode;
@@ -135,7 +137,17 @@ export function DataSettings({
           ))}
         </section>
         <section className="lj-settings-group">
-          <h3>导入与备份</h3>
+          <h3>导入、对账与备份</h3>
+          {onReconcile && (
+            <button className="lj-setting-row" disabled={busy} onClick={onReconcile}>
+              <Icon name="check" />
+              <span>
+                <strong>年度 Excel 对账</strong>
+                <small>与旧版全年明细逐笔核对数量和金额</small>
+              </span>
+              <Icon name="right" size={17} />
+            </button>
+          )}
           <button className="lj-setting-row" disabled={busy} onClick={onImport}>
             <Icon name="excel" />
             <span>

@@ -12,8 +12,12 @@ import type { ImportOptions, ImportPlan } from './imports/types';
 import { BackupPanel, type BackupPanelHandle, saveTextFile } from './backup';
 import { RecoveryPanel, type RecoveryPanelHandle } from './workflows/RecoveryPanel';
 import { ExcelExportPanel, type ExcelExportPanelHandle } from './exports/ExcelExportPanel';
+import {
+  ReconciliationPanel,
+  type ReconciliationPanelHandle,
+} from './reconciliation/ReconciliationPanel';
 
-type Panel = 'import' | 'export' | 'excel-export' | 'restore' | 'history' | null;
+type Panel = 'import' | 'export' | 'excel-export' | 'reconcile' | 'restore' | 'history' | null;
 
 export default function App() {
   const [loaded, setLoaded] = useState<LoadedLedger | null>(null);
@@ -30,6 +34,7 @@ export default function App() {
   const backup = useRef<BackupPanelHandle>(null);
   const recovery = useRef<RecoveryPanelHandle>(null);
   const excelExport = useRef<ExcelExportPanelHandle>(null);
+  const reconciliation = useRef<ReconciliationPanelHandle>(null);
   const unavailableShell = useMemo(() => createEmptyState(), []);
   panelRef.current = panel;
   busyRef.current = busy;
@@ -91,6 +96,10 @@ export default function App() {
       }
       if (panelRef.current === 'excel-export') {
         excelExport.current?.requestClose();
+        return true;
+      }
+      if (panelRef.current === 'reconcile') {
+        reconciliation.current?.requestClose();
         return true;
       }
       return app.current?.back() ?? false;
@@ -203,6 +212,7 @@ export default function App() {
           onImport={() => setPanel('import')}
           onExport={() => setPanel('export')}
           onExcelExport={() => setPanel('excel-export')}
+          onReconcile={() => setPanel('reconcile')}
           onRestore={() => setPanel('restore')}
           onHistory={() => setPanel('history')}
           dataTools={
@@ -290,6 +300,9 @@ export default function App() {
       )}
       {panel === 'excel-export' && loaded && (
         <ExcelExportPanel ref={excelExport} state={loaded.state} onClose={closePanel} />
+      )}
+      {panel === 'reconcile' && loaded && (
+        <ReconciliationPanel ref={reconciliation} state={loaded.state} onClose={closePanel} />
       )}
       {panel === 'history' && repository.current && (
         <RecoveryPanel

@@ -1,0 +1,228 @@
+.reconciliation-panel {
+  --rc-page: #faf9f6;
+  --rc-card: #fffdf9;
+  --rc-line: #dfe6e4;
+  --rc-text: #273b36;
+  --rc-muted: #687b75;
+  width: min(720px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
+  padding: 0;
+  border: 1px solid var(--rc-line);
+  border-radius: 20px;
+  color: var(--rc-text);
+  background: var(--rc-page);
+  font-family: inherit;
+  overflow: hidden;
+}
+.reconciliation-panel[open] {
+  display: flex;
+  flex-direction: column;
+}
+.reconciliation-panel::backdrop {
+  background: #182f2969;
+}
+.reconciliation-panel[data-theme='dark'] {
+  color-scheme: dark;
+  --rc-page: #202b27;
+  --rc-card: #2c3932;
+  --rc-line: #46594e;
+  --rc-text: #e6eee8;
+  --rc-muted: #bac8bd;
+}
+.reconciliation-panel * {
+  box-sizing: border-box;
+}
+.reconciliation-panel button,
+.reconciliation-panel input,
+.reconciliation-panel select {
+  font: inherit;
+}
+.reconciliation-panel button {
+  cursor: pointer;
+}
+.reconciliation-panel button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.reconciliation-panel :focus-visible {
+  outline: 2px solid #169fc0;
+  outline-offset: 3px;
+}
+.rc-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  border-bottom: 1px solid var(--rc-line);
+}
+.rc-header h1 {
+  margin: 0;
+  font-size: 20px;
+}
+.rc-header p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--rc-muted);
+}
+.rc-header > button {
+  margin-left: auto;
+  border: 0;
+  background: none;
+  color: inherit;
+  padding: 6px;
+}
+.rc-scroll {
+  overflow: auto;
+  padding: 18px 20px;
+  overscroll-behavior: contain;
+}
+.rc-help {
+  color: var(--rc-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.rc-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  margin: 18px 0;
+}
+.rc-fields label,
+.rc-file {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.rc-fields input,
+.rc-fields select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--rc-line);
+  background: var(--rc-card);
+  color: inherit;
+  border-radius: 9px;
+}
+.rc-file {
+  margin-bottom: 18px;
+}
+.rc-file input {
+  max-width: 100%;
+  border: 1px dashed var(--rc-line);
+  padding: 12px;
+  border-radius: 10px;
+}
+.rc-primary,
+.rc-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--rc-line);
+}
+.rc-primary {
+  background: #087e9e;
+  color: white;
+  border-color: #087e9e;
+}
+.rc-secondary {
+  background: var(--rc-card);
+  color: inherit;
+  margin: 4px;
+}
+.rc-results {
+  margin-top: 20px;
+  border-top: 1px solid var(--rc-line);
+  padding-top: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.rc-results h2 {
+  font-size: 19px;
+}
+.rc-success {
+  color: #218251;
+}
+.rc-error {
+  color: #be4b39;
+  line-height: 1.6;
+}
+.reconciliation-panel[data-theme='dark'] .rc-error {
+  color: #ffa996;
+}
+.reconciliation-panel[data-theme='dark'] .rc-success {
+  color: #8ed5aa;
+}
+.rc-table-wrap {
+  overflow-x: auto;
+  margin: 14px 0;
+}
+.rc-results table {
+  border-collapse: collapse;
+  width: 100%;
+  text-align: right;
+}
+.rc-results th,
+.rc-results td {
+  padding: 9px 6px;
+  border-bottom: 1px solid var(--rc-line);
+  white-space: nowrap;
+}
+.rc-results th:first-child {
+  text-align: left;
+}
+.rc-blockers {
+  padding-left: 20px;
+  color: var(--rc-muted);
+}
+.rc-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+.rc-check input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+.rc-differences {
+  padding-left: 22px;
+}
+.rc-differences > li {
+  border: 1px solid var(--rc-line);
+  border-radius: 10px;
+  padding: 12px;
+  margin: 10px 0;
+  background: var(--rc-card);
+}
+.rc-differences p {
+  margin: 6px 0;
+}
+.rc-private {
+  color: var(--rc-muted);
+}
+.rc-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.rc-pagination button {
+  border: 1px solid var(--rc-line);
+  border-radius: 8px;
+  padding: 8px;
+  color: inherit;
+  background: var(--rc-card);
+}
+.rc-footer {
+  padding: 10px 16px;
+  border-top: 1px solid var(--rc-line);
+  text-align: right;
+}

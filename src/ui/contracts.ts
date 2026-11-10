@@ -11,6 +11,7 @@ export interface ProductionAppProps {
   onImport: () => void;
   onExport: () => void;
   onExcelExport?: () => void;
+  onReconcile?: () => void;
   onRestore: () => void;
   onHistory: () => void;
   dataTools?: ReactNode;
