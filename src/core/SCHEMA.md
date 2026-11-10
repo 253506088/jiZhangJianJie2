@@ -24,7 +24,9 @@ v2 在保留两级分类身份、账户、来源行、预算和模板的基础�
 
 ## v1 后向兼容
 
-这里的 v1 指本重制工程先前的 schemaVersion=1，不表示已经支持原 App 未公开的私有“本地备份”格式；原 App 数据仍按实测 Excel 格式导入。
+这里的 v1 指本重制工程先前的 schemaVersion=1。原 App 的 SQLite user_version=16 通过独立的 `src/legacy-db` 解析迁移，不能当作本项目 schemaVersion；旧格式依据见 `docs/LEGACY-DB.md`。
+
+`settings.homeBackground` 为可选的本机图片数据与显示方式，未设置时使用默认插画；完整备份保留原始动画字节。该字段不改变财务统计。
 
 `legacy-v1.ts` 是冻结的旧结构验证器。`migrateState(value)` 先识别版本并严格验证原 v1 数据，再返回新副本；不会修改输入或写数据库。
 

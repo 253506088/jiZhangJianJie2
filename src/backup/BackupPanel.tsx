@@ -483,7 +483,10 @@ export const BackupPanel = forwardRef<BackupPanelHandle, BackupPanelProps>(funct
               <strong>{fileName || '选择完整备份文件'}</strong>
               <span>{fileName ? '点此重新选择文件' : '.jzbackup 或 .json，由本 App 导出'}</span>
             </button>
-            <p className="bk-help">这里恢复本 App 的完整备份；旧版 Excel 请使用“导入 Excel”。</p>
+            <p className="bk-help">
+              这里恢复新版 .jzbackup；旧版 .db 请使用“从旧版 .db 初始化”，旧版 Excel
+              请使用导入功能。
+            </p>
             {inspection && !verified && (
               <section className="bk-options">
                 <p className="bk-file-meta">

@@ -1,7 +1,7 @@
 {
   "name": "jizhang-jianjie2",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -25,6 +25,7 @@
     "lucide-react": "1.70.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
+    "sql.js": "1.15.2",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
@@ -33,6 +34,7 @@
     "@types/node": "^24.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/sql.js": "1.4.11",
     "@vitejs/plugin-react": "6.2.1",
     "fake-indexeddb": "6.2.7",
     "prettier": "^3.6.2",

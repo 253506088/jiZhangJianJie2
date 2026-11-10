@@ -1,4 +1,5 @@
 import { budgetScopeKey } from './budget-periods';
+import { validLegacyDbMetadata, type LegacyDbMetadata } from './legacy-db-metadata';
 import { validHomeBackground, type HomeBackground } from './home-background';
 
 /** The versioned, portable ledger model. No device or UI dependencies belong here. */
@@ -150,6 +151,8 @@ export interface ImportBatch {
   transactionIds: string[];
   /** Retained after deletion so a repeated/partial import cannot resurrect the same source row. */
   sourceRows?: { sheet: string; row: number; transactionId: string }[];
+  /** Original legacy fields, retained in full local backups; never logged or automatically exported. */
+  legacyDb?: LegacyDbMetadata;
 }
 
 export interface Budget {
@@ -633,6 +636,8 @@ export function validateState(value: unknown): asserts value is LedgerState {
     );
     string(batch.fileName, '导入文件名', 512);
     timestamp(batch.importedAt, '导入时间');
+    if (batch.legacyDb !== undefined)
+      requireValue(validLegacyDbMetadata(batch.legacyDb), '旧版数据库附属资料格式或大小不正确');
     for (const field of ['totalRows', 'importedRows', 'skippedRows', 'rejectedRows'] as const) {
       requireValue(
         Number.isSafeInteger(batch[field]) && (batch[field] as number) >= 0,

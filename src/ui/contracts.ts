@@ -9,6 +9,7 @@ export interface ProductionAppProps {
   busy: boolean;
   mutate: (mutation: LedgerMutation) => Promise<void>;
   onImport: () => void;
+  onLegacyImport?: () => void;
   onExport: () => void;
   onExcelExport?: () => void;
   onReconcile?: () => void;

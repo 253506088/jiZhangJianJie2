@@ -19,10 +19,12 @@ export function OverviewHome({
   busy,
   navigate,
   onImport,
+  onLegacyImport,
   onMonth,
 }: PageProps & {
   navigate: (route: Route) => void;
   onImport: () => void;
+  onLegacyImport?: () => void;
   onMonth: (month: string) => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -188,7 +190,13 @@ export function OverviewHome({
             <Icon name="excel" size={25} />
             <div>
               <h2>把旧账本接着记下去</h2>
-              <p>手动选择旧版导出的 Excel，分类会一并初始化。</p>
+              <p>选择旧版 .db 迁移账本，或用 Excel 导入明细。</p>
+              {onLegacyImport && (
+                <button className="lj-text-button" disabled={busy} onClick={onLegacyImport}>
+                  从旧版 .db 初始化
+                  <Icon name="arrow" size={16} />
+                </button>
+              )}
               <button className="lj-text-button" disabled={busy} onClick={onImport}>
                 从 Excel 导入
                 <Icon name="arrow" size={16} />

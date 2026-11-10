@@ -30,6 +30,7 @@ export function DataSettings({
   onBack,
   navigate,
   onImport,
+  onLegacyImport,
   onExport,
   onExcelExport,
   onReconcile,
@@ -40,6 +41,7 @@ export function DataSettings({
   onBack: () => void;
   navigate: (route: Route) => void;
   onImport: () => void;
+  onLegacyImport?: () => void;
   onExport: () => void;
   onExcelExport?: () => void;
   onReconcile?: () => void;
@@ -137,13 +139,13 @@ export function DataSettings({
           ))}
         </section>
         <section className="lj-settings-group">
-          <h3>导入、对账与备份</h3>
-          {onReconcile && (
-            <button className="lj-setting-row" disabled={busy} onClick={onReconcile}>
-              <Icon name="check" />
+          <h3>从旧版初始化</h3>
+          {onLegacyImport && (
+            <button className="lj-setting-row" disabled={busy} onClick={onLegacyImport}>
+              <Icon name="upload" />
               <span>
-                <strong>年度 Excel 对账</strong>
-                <small>与旧版全年明细逐笔核对数量和金额</small>
+                <strong>从旧版 .db 初始化</strong>
+                <small>选择原版“本地备份”，迁移到独立新账本</small>
               </span>
               <Icon name="right" size={17} />
             </button>
@@ -156,6 +158,19 @@ export function DataSettings({
             </span>
             <Icon name="right" size={17} />
           </button>
+        </section>
+        <section className="lj-settings-group">
+          <h3>对账与新版备份</h3>
+          {onReconcile && (
+            <button className="lj-setting-row" disabled={busy} onClick={onReconcile}>
+              <Icon name="check" />
+              <span>
+                <strong>年度 Excel 对账</strong>
+                <small>与旧版全年明细逐笔核对数量和金额</small>
+              </span>
+              <Icon name="right" size={17} />
+            </button>
+          )}
           <button className="lj-setting-row" disabled={busy} onClick={() => setShowImports(true)}>
             <Icon name="list" />
             <span>

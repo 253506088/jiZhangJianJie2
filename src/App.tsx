@@ -16,8 +16,18 @@ import {
   ReconciliationPanel,
   type ReconciliationPanelHandle,
 } from './reconciliation/ReconciliationPanel';
+import { LegacyDbImportPanel, type LegacyDbImportHandle } from './legacy-db/LegacyDbImportPanel';
+import { applyLegacyDatabase } from './legacy-db/prepare';
 
-type Panel = 'import' | 'export' | 'excel-export' | 'reconcile' | 'restore' | 'history' | null;
+type Panel =
+  | 'import'
+  | 'legacy-db'
+  | 'export'
+  | 'excel-export'
+  | 'reconcile'
+  | 'restore'
+  | 'history'
+  | null;
 
 export default function App() {
   const [loaded, setLoaded] = useState<LoadedLedger | null>(null);
@@ -35,6 +45,7 @@ export default function App() {
   const recovery = useRef<RecoveryPanelHandle>(null);
   const excelExport = useRef<ExcelExportPanelHandle>(null);
   const reconciliation = useRef<ReconciliationPanelHandle>(null);
+  const legacyImporter = useRef<LegacyDbImportHandle>(null);
   const unavailableShell = useMemo(() => createEmptyState(), []);
   panelRef.current = panel;
   busyRef.current = busy;
@@ -84,6 +95,10 @@ export default function App() {
       if (writing.current || busyRef.current) return true;
       if (panelRef.current === 'import') {
         importer.current?.requestClose();
+        return true;
+      }
+      if (panelRef.current === 'legacy-db') {
+        legacyImporter.current?.requestClose();
         return true;
       }
       if (panelRef.current === 'export' || panelRef.current === 'restore') {
@@ -210,6 +225,7 @@ export default function App() {
           busy={busy}
           mutate={mutate}
           onImport={() => setPanel('import')}
+          onLegacyImport={() => setPanel('legacy-db')}
           onExport={() => setPanel('export')}
           onExcelExport={() => setPanel('excel-export')}
           onReconcile={() => setPanel('reconcile')}
@@ -278,6 +294,16 @@ export default function App() {
               bookId: result.firstBookId,
             });
             notify('已导入 ' + result.added + ' 笔，分类可直接用于继续记账');
+          }}
+        />
+      )}
+      {panel === 'legacy-db' && loaded && (
+        <LegacyDbImportPanel
+          ref={legacyImporter}
+          state={loaded.state}
+          onClose={closePanel}
+          onApply={async (plan, bookName) => {
+            await mutate((current) => applyLegacyDatabase(current, plan, bookName));
           }}
         />
       )}

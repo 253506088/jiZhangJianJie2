@@ -19,12 +19,14 @@ export function Home({
   onMonth,
   navigate,
   onImport,
+  onLegacyImport,
   onOpen,
 }: PageProps & {
   month: string;
   onMonth: (month: string) => void;
   navigate: (route: Route) => void;
   onImport: () => void;
+  onLegacyImport?: () => void;
   onOpen: (entry: Transaction) => void;
 }) {
   const book = state.books.find((item) => item.id === bookId)!;
@@ -156,7 +158,13 @@ export function Home({
             </span>
             <div>
               <h2>把熟悉的旧账本带过来</h2>
-              <p>选择旧版导出的 Excel，分类和历史流水会一起初始化。</p>
+              <p>选择旧版 .db 迁移账本，或用 Excel 导入明细。</p>
+              {onLegacyImport && (
+                <button className="lj-text-button" disabled={busy} onClick={onLegacyImport}>
+                  从旧版 .db 初始化
+                  <Icon name="arrow" size={16} />
+                </button>
+              )}
               <button className="lj-text-button" disabled={busy} onClick={onImport}>
                 从 Excel 导入
                 <Icon name="arrow" size={16} />

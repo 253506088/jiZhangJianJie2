@@ -123,7 +123,9 @@ export async function saveTextFile(
 
 export async function readBackupFile(file: File): Promise<string> {
   if (!/\.(json|jzbackup)$/i.test(file.name))
-    throw new Error('请选择本 App 导出的 .jzbackup 或 .json 完整备份。旧版 Excel 请使用导入功能。');
+    throw new Error(
+      '请选择本 App 导出的 .jzbackup 或 .json 完整备份。旧版 .db 请使用“从旧版 .db 初始化”，Excel 请使用导入功能。',
+    );
   if (!file.size || file.size > MAX_BACKUP_FILE_BYTES)
     throw new Error('备份文件需为非空且不超过 96 MiB。');
   try {

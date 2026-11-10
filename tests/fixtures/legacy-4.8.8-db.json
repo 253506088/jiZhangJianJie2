@@ -1,0 +1,857 @@
+{
+  "provenance": "Normal Local backup export from unmodified 4.8.8 APK in project-owned synthetic ARM lab; all ledger data fabricated.",
+  "sourceSha256": "9f130b34a9080d497e3bf02eb1ff21d61fa1498312a1e5459f847debd302f7f9",
+  "userVersion": 16,
+  "tables": {
+    "account_type": {
+      "sql": "CREATE TABLE account_type (id INTEGER PRIMARY KEY AUTOINCREMENT,key, value, money)",
+      "rows": [
+        {
+          "id": 1,
+          "key": "3--->1",
+          "value": "储蓄卡",
+          "money": "190.29"
+        },
+        {
+          "id": 2,
+          "key": "0--->2",
+          "value": "现金",
+          "money": "40.50"
+        }
+      ]
+    },
+    "android_metadata": {
+      "sql": "CREATE TABLE android_metadata (locale TEXT)",
+      "rows": [
+        {
+          "locale": "en_US"
+        }
+      ]
+    },
+    "auto_charge": {
+      "sql": "CREATE TABLE auto_charge (id INTEGER PRIMARY KEY AUTOINCREMENT, uri, money, type_detail, account_detail,  member, date, remind_model, remind_date, interest, remarks, time_span,update_time)",
+      "rows": []
+    },
+    "borrow": {
+      "sql": "CREATE TABLE borrow (id INTEGER PRIMARY KEY AUTOINCREMENT, uri, money, type_detail, account_detail,  member, date, remind_model, remind_date, interest, remarks, time_span,update_time)",
+      "rows": [
+        {
+          "id": 1,
+          "uri": null,
+          "money": "71.00",
+          "type_detail": "借入",
+          "account_detail": "现金",
+          "member": "FixtureLender",
+          "date": "2026-11-07 19:52",
+          "remind_model": "无需提醒",
+          "remind_date": "2026-11-07",
+          "interest": "",
+          "remarks": "",
+          "time_span": "1794081730860",
+          "update_time": "1794081730860"
+        },
+        {
+          "id": 2,
+          "uri": null,
+          "money": "13.00",
+          "type_detail": "借出",
+          "account_detail": "现金",
+          "member": "FixtureLender",
+          "date": "2026-11-07 20:11",
+          "remind_model": "无需提醒",
+          "remind_date": "2026-11-07",
+          "interest": "",
+          "remarks": "",
+          "time_span": "1794082297312",
+          "update_time": "1794082297312"
+        },
+        {
+          "id": 3,
+          "uri": null,
+          "money": "11.00",
+          "type_detail": "还款",
+          "account_detail": "现金",
+          "member": "FixtureLender",
+          "date": "2026-11-07 20:14",
+          "remind_model": "无需提醒",
+          "remind_date": "2026-11-07",
+          "interest": "",
+          "remarks": "",
+          "time_span": "1794082489724",
+          "update_time": "1794082489724"
+        },
+        {
+          "id": 4,
+          "uri": null,
+          "money": "7.00",
+          "type_detail": "收款",
+          "account_detail": "现金",
+          "member": "FixtureLender",
+          "date": "2026-11-07 20:16",
+          "remind_model": "无需提醒",
+          "remind_date": "2026-11-07",
+          "interest": "",
+          "remarks": "",
+          "time_span": "1794082588904",
+          "update_time": "1794082588904"
+        },
+        {
+          "id": 5,
+          "uri": null,
+          "money": "1.00",
+          "type_detail": "借入",
+          "account_detail": "现金",
+          "member": "FixtureLender",
+          "date": "2026-11-07 21:26",
+          "remind_model": "无需提醒",
+          "remind_date": "2026-11-07",
+          "interest": "",
+          "remarks": "",
+          "time_span": "1794087065371",
+          "update_time": "1794087065371"
+        }
+      ]
+    },
+    "borrow_member": {
+      "sql": "CREATE TABLE borrow_member (id INTEGER PRIMARY KEY AUTOINCREMENT,name, money, updateTime default 0)",
+      "rows": [
+        {
+          "id": 1,
+          "name": "FixtureLender",
+          "money": "-55.00",
+          "updateTime": 1794087064141
+        }
+      ]
+    },
+    "budget": {
+      "sql": "CREATE TABLE budget (id INTEGER PRIMARY KEY AUTOINCREMENT,type, total, expenses)",
+      "rows": [
+        {
+          "id": 1,
+          "type": "总体预算",
+          "total": "3000",
+          "expenses": "月预算"
+        },
+        {
+          "id": 3,
+          "type": "总体预算",
+          "total": "700",
+          "expenses": "周预算"
+        },
+        {
+          "id": 4,
+          "type": "交通",
+          "total": "50",
+          "expenses": "日预算"
+        }
+      ]
+    },
+    "delete_item": {
+      "sql": "CREATE TABLE delete_item (id INTEGER PRIMARY KEY AUTOINCREMENT,time_span)",
+      "rows": []
+    },
+    "expenses": {
+      "sql": "CREATE TABLE expenses (id INTEGER PRIMARY KEY AUTOINCREMENT, uri, money, type_main, type_detail, account_detail, date, member, remarks, time_span,update_time)",
+      "rows": [
+        {
+          "id": 1,
+          "uri": null,
+          "money": "10.00",
+          "type_main": "FixtureFood",
+          "type_detail": "FixtureBreakfast",
+          "account_detail": "现金",
+          "date": "2026-11-07 19:28",
+          "member": "自己",
+          "remarks": "",
+          "time_span": "1794080419365",
+          "update_time": "1794080419365"
+        },
+        {
+          "id": 2,
+          "uri": null,
+          "money": "10.00",
+          "type_main": "FixtureFood",
+          "type_detail": "FixtureBreakfast",
+          "account_detail": "现金",
+          "date": "2026-11-07 19:40",
+          "member": "自己",
+          "remarks": "",
+          "time_span": "1794080488424",
+          "update_time": "1794080488424"
+        },
+        {
+          "id": 3,
+          "uri": null,
+          "money": "1.00",
+          "type_main": "FixtureFood",
+          "type_detail": "FixtureBreakfast",
+          "account_detail": "储蓄卡",
+          "date": "2026-11-07 21:02",
+          "member": "FixtureMember",
+          "remarks": "",
+          "time_span": "1794085377452",
+          "update_time": "1794085377452"
+        },
+        {
+          "id": 4,
+          "uri": null,
+          "money": "3.21",
+          "type_main": "FixtureFood",
+          "type_detail": "FixtureBreakfast",
+          "account_detail": "储蓄卡",
+          "date": "2026-11-01 21:08",
+          "member": "FixtureMember",
+          "remarks": "",
+          "time_span": "1794086524002",
+          "update_time": "1794086524002"
+        }
+      ]
+    },
+    "expenses_left": {
+      "sql": "CREATE TABLE expenses_left (id INTEGER PRIMARY KEY AUTOINCREMENT,left, icon_type, updateTime default 0)",
+      "rows": [
+        {
+          "id": 1,
+          "left": "常用",
+          "icon_type": 6,
+          "updateTime": 0
+        },
+        {
+          "id": 2,
+          "left": "餐饮",
+          "icon_type": 4,
+          "updateTime": 0
+        },
+        {
+          "id": 3,
+          "left": "交通",
+          "icon_type": 12,
+          "updateTime": 0
+        },
+        {
+          "id": 4,
+          "left": "购物",
+          "icon_type": 11,
+          "updateTime": 0
+        },
+        {
+          "id": 5,
+          "left": "娱乐",
+          "icon_type": 3,
+          "updateTime": 0
+        },
+        {
+          "id": 6,
+          "left": "医药",
+          "icon_type": 9,
+          "updateTime": 0
+        },
+        {
+          "id": 7,
+          "left": "学习",
+          "icon_type": 2,
+          "updateTime": 0
+        },
+        {
+          "id": 8,
+          "left": "约会",
+          "icon_type": 1,
+          "updateTime": 0
+        },
+        {
+          "id": 9,
+          "left": "FixtureFood",
+          "icon_type": 7,
+          "updateTime": 0
+        }
+      ]
+    },
+    "expenses_right": {
+      "sql": "CREATE TABLE expenses_right (id INTEGER PRIMARY KEY AUTOINCREMENT,key, value, usually_key, updateTime default 0)",
+      "rows": [
+        {
+          "id": 1,
+          "key": "餐饮",
+          "value": "早餐",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 2,
+          "key": "餐饮",
+          "value": "午餐",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 3,
+          "key": "餐饮",
+          "value": "晚餐",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 4,
+          "key": "餐饮",
+          "value": "零食",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 5,
+          "key": "餐饮",
+          "value": "饮料",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 6,
+          "key": "餐饮",
+          "value": "买菜",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 7,
+          "key": "餐饮",
+          "value": "宵夜",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 8,
+          "key": "餐饮",
+          "value": "水果",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 9,
+          "key": "交通",
+          "value": "公交",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 10,
+          "key": "交通",
+          "value": "地铁",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 11,
+          "key": "交通",
+          "value": "打车",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 12,
+          "key": "交通",
+          "value": "火车",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 13,
+          "key": "交通",
+          "value": "飞机",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 14,
+          "key": "交通",
+          "value": "船舶",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 15,
+          "key": "交通",
+          "value": "汽车",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 16,
+          "key": "购物",
+          "value": "饰品",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 17,
+          "key": "购物",
+          "value": "化妆品",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 18,
+          "key": "购物",
+          "value": "衣服裤子",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 19,
+          "key": "购物",
+          "value": "鞋帽包包",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 20,
+          "key": "娱乐",
+          "value": "旅游",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 21,
+          "key": "娱乐",
+          "value": "KTV",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 22,
+          "key": "娱乐",
+          "value": "看电影",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 23,
+          "key": "娱乐",
+          "value": "运动健身",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 24,
+          "key": "娱乐",
+          "value": "麻将棋牌",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 25,
+          "key": "医药",
+          "value": "药品",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 26,
+          "key": "医药",
+          "value": "美容",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 27,
+          "key": "医药",
+          "value": "保健",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 28,
+          "key": "医药",
+          "value": "治疗",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 29,
+          "key": "学习",
+          "value": "书籍",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 30,
+          "key": "学习",
+          "value": "培训",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 31,
+          "key": "学习",
+          "value": "知识付费",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 32,
+          "key": "约会",
+          "value": "看电影",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 33,
+          "key": "约会",
+          "value": "饮食",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 34,
+          "key": "约会",
+          "value": "花卉礼物",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 35,
+          "key": "约会",
+          "value": "游玩娱乐",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 36,
+          "key": "FixtureFood",
+          "value": "FixtureBreakfast",
+          "usually_key": null,
+          "updateTime": 0
+        },
+        {
+          "id": 37,
+          "key": "常用",
+          "value": "FixtureBreakfast",
+          "usually_key": "FixtureFood",
+          "updateTime": 0
+        }
+      ]
+    },
+    "income": {
+      "sql": "CREATE TABLE income (id INTEGER PRIMARY KEY AUTOINCREMENT, uri, money, type_detail,account_detail, date, member,remarks, time_span,update_time)",
+      "rows": [
+        {
+          "id": 1,
+          "uri": null,
+          "money": "101.25",
+          "type_detail": "工资薪水",
+          "account_detail": "储蓄卡",
+          "date": "2026-11-07 20:18",
+          "member": "FixtureMember",
+          "remarks": "Fixture salary memo",
+          "time_span": "1794083249576",
+          "update_time": "1794083249576"
+        },
+        {
+          "id": 2,
+          "uri": null,
+          "money": "98.75",
+          "type_detail": "工资薪水",
+          "account_detail": "储蓄卡",
+          "date": "2026-11-07 20:57",
+          "member": "FixtureMember",
+          "remarks": "",
+          "time_span": "1794085091018",
+          "update_time": "1794085091018"
+        }
+      ]
+    },
+    "income_type": {
+      "sql": "CREATE TABLE income_type (id INTEGER PRIMARY KEY AUTOINCREMENT,income_type, icon_type, updateTime default 0)",
+      "rows": [
+        {
+          "id": 1,
+          "income_type": "生活费",
+          "icon_type": 4,
+          "updateTime": 0
+        },
+        {
+          "id": 2,
+          "income_type": "兼职",
+          "icon_type": 3,
+          "updateTime": 0
+        },
+        {
+          "id": 3,
+          "income_type": "奖学金",
+          "icon_type": 2,
+          "updateTime": 0
+        },
+        {
+          "id": 4,
+          "income_type": "补贴",
+          "icon_type": 1,
+          "updateTime": 0
+        },
+        {
+          "id": 5,
+          "income_type": "工资薪水",
+          "icon_type": 0,
+          "updateTime": 0
+        }
+      ]
+    },
+    "member": {
+      "sql": "CREATE TABLE member (id INTEGER PRIMARY KEY AUTOINCREMENT,member, updateTime default 0)",
+      "rows": [
+        {
+          "id": 1,
+          "member": "自己",
+          "updateTime": 0
+        },
+        {
+          "id": 2,
+          "member": "父母",
+          "updateTime": 0
+        },
+        {
+          "id": 3,
+          "member": "女朋友",
+          "updateTime": 0
+        },
+        {
+          "id": 4,
+          "member": "男朋友",
+          "updateTime": 0
+        },
+        {
+          "id": 5,
+          "member": "朋友",
+          "updateTime": 0
+        },
+        {
+          "id": 6,
+          "member": "配偶",
+          "updateTime": 0
+        },
+        {
+          "id": 7,
+          "member": "孩子",
+          "updateTime": 0
+        },
+        {
+          "id": 8,
+          "member": "公共",
+          "updateTime": 0
+        },
+        {
+          "id": 9,
+          "member": "其他",
+          "updateTime": 0
+        },
+        {
+          "id": 10,
+          "member": "FixtureMember",
+          "updateTime": 1794083065620
+        }
+      ]
+    },
+    "remind": {
+      "sql": "CREATE TABLE remind (id INTEGER PRIMARY KEY AUTOINCREMENT,isBorrow, person, money, time_remind, timeSpanOfSequence)",
+      "rows": []
+    },
+    "sqlite_sequence": {
+      "sql": "CREATE TABLE sqlite_sequence(name,seq)",
+      "rows": [
+        {
+          "name": "expenses_left",
+          "seq": 9
+        },
+        {
+          "name": "expenses_right",
+          "seq": 37
+        },
+        {
+          "name": "income_type",
+          "seq": 5
+        },
+        {
+          "name": "account_type",
+          "seq": 2
+        },
+        {
+          "name": "member",
+          "seq": 10
+        },
+        {
+          "name": "expenses",
+          "seq": 4
+        },
+        {
+          "name": "time_sequence",
+          "seq": 12
+        },
+        {
+          "name": "borrow_member",
+          "seq": 1
+        },
+        {
+          "name": "borrow",
+          "seq": 5
+        },
+        {
+          "name": "income",
+          "seq": 2
+        },
+        {
+          "name": "transfer",
+          "seq": 1
+        },
+        {
+          "name": "budget",
+          "seq": 4
+        }
+      ]
+    },
+    "template": {
+      "sql": "CREATE TABLE template (id INTEGER PRIMARY KEY AUTOINCREMENT, name, uri, account_type, info, update_time, use_time)",
+      "rows": []
+    },
+    "time_sequence": {
+      "sql": "CREATE TABLE time_sequence (id INTEGER PRIMARY KEY AUTOINCREMENT,time_span_four, account_type, date, time_span, member,account_detail_1,account_detail_2)",
+      "rows": [
+        {
+          "id": 1,
+          "time_span_four": "1794080419365",
+          "account_type": "expenses",
+          "date": "2026-11-07 19:28",
+          "time_span": "1794080419365",
+          "member": "自己",
+          "account_detail_1": "现金",
+          "account_detail_2": ""
+        },
+        {
+          "id": 2,
+          "time_span_four": "1794080488424",
+          "account_type": "expenses",
+          "date": "2026-11-07 19:40",
+          "time_span": "1794080488424",
+          "member": "自己",
+          "account_detail_1": "现金",
+          "account_detail_2": ""
+        },
+        {
+          "id": 3,
+          "time_span_four": "1794081730860",
+          "account_type": "borrow",
+          "date": "2026-11-07 19:52",
+          "time_span": "1794081730860",
+          "member": "FixtureLender",
+          "account_detail_1": "现金",
+          "account_detail_2": ""
+        },
+        {
+          "id": 4,
+          "time_span_four": "1794082297312",
+          "account_type": "borrow",
+          "date": "2026-11-07 20:11",
+          "time_span": "1794082297312",
+          "member": "FixtureLender",
+          "account_detail_1": "现金",
+          "account_detail_2": ""
+        },
+        {
+          "id": 5,
+          "time_span_four": "1794082489724",
+          "account_type": "borrow",
+          "date": "2026-11-07 20:14",
+          "time_span": "1794082489724",
+          "member": "FixtureLender",
+          "account_detail_1": "现金",
+          "account_detail_2": ""
+        },
+        {
+          "id": 6,
+          "time_span_four": "1794082588904",
+          "account_type": "borrow",
+          "date": "2026-11-07 20:16",
+          "time_span": "1794082588904",
+          "member": "FixtureLender",
+          "account_detail_1": "现金",
+          "account_detail_2": ""
+        },
+        {
+          "id": 7,
+          "time_span_four": "1794083249576",
+          "account_type": "income",
+          "date": "2026-11-07 20:18",
+          "time_span": "1794083249576",
+          "member": "FixtureMember",
+          "account_detail_1": "储蓄卡",
+          "account_detail_2": ""
+        },
+        {
+          "id": 8,
+          "time_span_four": "1794083587703",
+          "account_type": "transfer",
+          "date": "2026-11-07 20:27",
+          "time_span": "1794083587703",
+          "member": "FixtureMember",
+          "account_detail_1": "储蓄卡",
+          "account_detail_2": "现金"
+        },
+        {
+          "id": 9,
+          "time_span_four": "1794085091018",
+          "account_type": "income",
+          "date": "2026-11-07 20:57",
+          "time_span": "1794085091018",
+          "member": "FixtureMember",
+          "account_detail_1": "储蓄卡",
+          "account_detail_2": ""
+        },
+        {
+          "id": 10,
+          "time_span_four": "1794085377452",
+          "account_type": "expenses",
+          "date": "2026-11-07 21:02",
+          "time_span": "1794085377452",
+          "member": "FixtureMember",
+          "account_detail_1": "储蓄卡",
+          "account_detail_2": ""
+        },
+        {
+          "id": 11,
+          "time_span_four": "1794086524002",
+          "account_type": "expenses",
+          "date": "2026-11-01 21:08",
+          "time_span": "1794086524002",
+          "member": "FixtureMember",
+          "account_detail_1": "储蓄卡",
+          "account_detail_2": ""
+        },
+        {
+          "id": 12,
+          "time_span_four": "1794087065371",
+          "account_type": "borrow",
+          "date": "2026-11-07 21:26",
+          "time_span": "1794087065371",
+          "member": "FixtureLender",
+          "account_detail_1": "现金",
+          "account_detail_2": ""
+        }
+      ]
+    },
+    "transfer": {
+      "sql": "CREATE TABLE transfer (id INTEGER PRIMARY KEY AUTOINCREMENT, uri, money, type_detail,transfer_account_from, transfer_account_to, date, member, remarks,time_span,update_time)",
+      "rows": [
+        {
+          "id": 1,
+          "uri": null,
+          "money": "5.50",
+          "type_detail": "",
+          "transfer_account_from": "储蓄卡",
+          "transfer_account_to": "现金",
+          "date": "2026-11-07 20:27",
+          "member": "FixtureMember",
+          "remarks": "Fixture transfer memo",
+          "time_span": "1794083587703",
+          "update_time": "1794083587703"
+        }
+      ]
+    }
+  }
+}

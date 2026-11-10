@@ -1,0 +1,148 @@
+.legacy-db-dialog {
+  font-family: Inter, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  border: 0;
+  border-radius: 22px;
+  padding: 0;
+  width: min(720px, calc(100% - 24px));
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  color: var(--text, #252c34);
+  background: var(--surface, #fff);
+}
+.legacy-db-dialog::backdrop {
+  background: #11182780;
+}
+.legacy-db-dialog[data-theme='dark'] {
+  color-scheme: dark;
+  --text: #e7ece3;
+  --surface: #25312b;
+  --bg: #1c2620;
+  --muted: #b2beb2;
+  --border: #425047;
+  --accent: #447fa4;
+  --danger: #ffb4ab;
+}
+.legacy-db-dialog * {
+  box-sizing: border-box;
+}
+.legacy-db-dialog button,
+.legacy-db-dialog input {
+  font: inherit;
+}
+.legacy-db-dialog header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+}
+.legacy-db-dialog h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  margin: 0;
+}
+.legacy-db-dialog button {
+  border: 1px solid var(--border, #dde3ea);
+  border-radius: 10px;
+  padding: 10px 14px;
+  min-height: 42px;
+  color: inherit;
+  background: var(--surface, #fff);
+  cursor: pointer;
+}
+.legacy-db-dialog button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.legacy-db-dialog header button {
+  border: 0;
+  padding: 6px;
+  display: grid;
+  place-items: center;
+}
+.legacy-db-content {
+  padding: 18px 20px;
+  line-height: 1.65;
+}
+.legacy-db-content > p:first-child {
+  margin-top: 0;
+}
+.legacy-db-note {
+  font-size: 13px;
+  color: var(--muted, #697586);
+}
+.legacy-db-totals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 14px 0;
+}
+.legacy-db-totals > div {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg, #f4f7fa);
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+.legacy-db-book {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 16px 0;
+}
+.legacy-db-book input {
+  width: 100%;
+  border: 1px solid var(--border, #dde3ea);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 16px;
+  color: inherit;
+  background: var(--surface, #fff);
+}
+.legacy-db-warnings {
+  background: var(--bg, #f4f7fa);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 13px;
+}
+.legacy-db-warnings h4 {
+  margin: 0;
+}
+.legacy-db-warnings ul {
+  padding-left: 18px;
+}
+.legacy-db-warnings li + li {
+  margin-top: 6px;
+}
+.legacy-db-confirm {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 16px 0;
+  font-size: 14px;
+}
+.legacy-db-confirm input {
+  margin-top: 6px;
+}
+.legacy-db-dialog .legacy-db-primary {
+  background: var(--accent, #3579dd);
+  color: white;
+  border-color: transparent;
+  width: 100%;
+}
+.legacy-db-error {
+  color: var(--danger, #c93648);
+  font-size: 14px;
+}
+@media (max-width: 380px) {
+  .legacy-db-content {
+    padding: 14px;
+  }
+  .legacy-db-totals {
+    grid-template-columns: 1fr;
+  }
+}

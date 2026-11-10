@@ -44,6 +44,7 @@ export const ProductionApp = forwardRef<ProductionAppHandle, ProductionAppProps>
       busy,
       mutate,
       onImport,
+      onLegacyImport,
       onExport,
       onExcelExport,
       onReconcile,
@@ -203,7 +204,13 @@ export const ProductionApp = forwardRef<ProductionAppHandle, ProductionAppProps>
       const item = entry.route;
       if (item.screen === 'home')
         return state.settings.homeLayout === 'overview' ? (
-          <OverviewHome {...pageProps} navigate={navigate} onImport={onImport} onMonth={setMonth} />
+          <OverviewHome
+            {...pageProps}
+            navigate={navigate}
+            onImport={onImport}
+            onLegacyImport={onLegacyImport}
+            onMonth={setMonth}
+          />
         ) : (
           <Home
             {...pageProps}
@@ -211,6 +218,7 @@ export const ProductionApp = forwardRef<ProductionAppHandle, ProductionAppProps>
             onMonth={setMonth}
             navigate={navigate}
             onImport={onImport}
+            onLegacyImport={onLegacyImport}
             onOpen={openEntry}
           />
         );
@@ -320,6 +328,7 @@ export const ProductionApp = forwardRef<ProductionAppHandle, ProductionAppProps>
           onBack={pop}
           navigate={navigate}
           onImport={onImport}
+          onLegacyImport={onLegacyImport}
           onExport={onExport}
           onExcelExport={onExcelExport}
           onReconcile={onReconcile}

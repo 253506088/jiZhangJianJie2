@@ -1,0 +1,234 @@
+{
+  "provenance": "Normal UI long-press deletion and confirmation of one synthetic 1.00 expense; original app Local backup afterwards. Tables below replace same tables in legacy-4.8.8-db.json; unchanged tables are inherited.",
+  "baseSha256": "9f130b34a9080d497e3bf02eb1ff21d61fa1498312a1e5459f847debd302f7f9",
+  "sourceSha256": "d925b0ed72ab028dd48fcfd1374d6db0067e84547d2f938eac08820068ad4910",
+  "tables": {
+    "account_type": [
+      {
+        "id": 1,
+        "key": "3--->1",
+        "value": "储蓄卡",
+        "money": "191.29"
+      },
+      {
+        "id": 2,
+        "key": "0--->2",
+        "value": "现金",
+        "money": "40.50"
+      }
+    ],
+    "delete_item": [
+      {
+        "id": 1,
+        "time_span": "1794085377452"
+      }
+    ],
+    "expenses": [
+      {
+        "id": 1,
+        "uri": null,
+        "money": "10.00",
+        "type_main": "FixtureFood",
+        "type_detail": "FixtureBreakfast",
+        "account_detail": "现金",
+        "date": "2026-11-07 19:28",
+        "member": "自己",
+        "remarks": "",
+        "time_span": "1794080419365",
+        "update_time": "1794080419365"
+      },
+      {
+        "id": 2,
+        "uri": null,
+        "money": "10.00",
+        "type_main": "FixtureFood",
+        "type_detail": "FixtureBreakfast",
+        "account_detail": "现金",
+        "date": "2026-11-07 19:40",
+        "member": "自己",
+        "remarks": "",
+        "time_span": "1794080488424",
+        "update_time": "1794080488424"
+      },
+      {
+        "id": 4,
+        "uri": null,
+        "money": "3.21",
+        "type_main": "FixtureFood",
+        "type_detail": "FixtureBreakfast",
+        "account_detail": "储蓄卡",
+        "date": "2026-11-01 21:08",
+        "member": "FixtureMember",
+        "remarks": "",
+        "time_span": "1794086524002",
+        "update_time": "1794086524002"
+      }
+    ],
+    "sqlite_sequence": [
+      {
+        "name": "expenses_left",
+        "seq": 9
+      },
+      {
+        "name": "expenses_right",
+        "seq": 37
+      },
+      {
+        "name": "income_type",
+        "seq": 5
+      },
+      {
+        "name": "account_type",
+        "seq": 2
+      },
+      {
+        "name": "member",
+        "seq": 10
+      },
+      {
+        "name": "expenses",
+        "seq": 4
+      },
+      {
+        "name": "time_sequence",
+        "seq": 12
+      },
+      {
+        "name": "borrow_member",
+        "seq": 1
+      },
+      {
+        "name": "borrow",
+        "seq": 5
+      },
+      {
+        "name": "income",
+        "seq": 2
+      },
+      {
+        "name": "transfer",
+        "seq": 1
+      },
+      {
+        "name": "budget",
+        "seq": 4
+      },
+      {
+        "name": "delete_item",
+        "seq": 1
+      }
+    ],
+    "time_sequence": [
+      {
+        "id": 1,
+        "time_span_four": "1794080419365",
+        "account_type": "expenses",
+        "date": "2026-11-07 19:28",
+        "time_span": "1794080419365",
+        "member": "自己",
+        "account_detail_1": "现金",
+        "account_detail_2": ""
+      },
+      {
+        "id": 2,
+        "time_span_four": "1794080488424",
+        "account_type": "expenses",
+        "date": "2026-11-07 19:40",
+        "time_span": "1794080488424",
+        "member": "自己",
+        "account_detail_1": "现金",
+        "account_detail_2": ""
+      },
+      {
+        "id": 3,
+        "time_span_four": "1794081730860",
+        "account_type": "borrow",
+        "date": "2026-11-07 19:52",
+        "time_span": "1794081730860",
+        "member": "FixtureLender",
+        "account_detail_1": "现金",
+        "account_detail_2": ""
+      },
+      {
+        "id": 4,
+        "time_span_four": "1794082297312",
+        "account_type": "borrow",
+        "date": "2026-11-07 20:11",
+        "time_span": "1794082297312",
+        "member": "FixtureLender",
+        "account_detail_1": "现金",
+        "account_detail_2": ""
+      },
+      {
+        "id": 5,
+        "time_span_four": "1794082489724",
+        "account_type": "borrow",
+        "date": "2026-11-07 20:14",
+        "time_span": "1794082489724",
+        "member": "FixtureLender",
+        "account_detail_1": "现金",
+        "account_detail_2": ""
+      },
+      {
+        "id": 6,
+        "time_span_four": "1794082588904",
+        "account_type": "borrow",
+        "date": "2026-11-07 20:16",
+        "time_span": "1794082588904",
+        "member": "FixtureLender",
+        "account_detail_1": "现金",
+        "account_detail_2": ""
+      },
+      {
+        "id": 7,
+        "time_span_four": "1794083249576",
+        "account_type": "income",
+        "date": "2026-11-07 20:18",
+        "time_span": "1794083249576",
+        "member": "FixtureMember",
+        "account_detail_1": "储蓄卡",
+        "account_detail_2": ""
+      },
+      {
+        "id": 8,
+        "time_span_four": "1794083587703",
+        "account_type": "transfer",
+        "date": "2026-11-07 20:27",
+        "time_span": "1794083587703",
+        "member": "FixtureMember",
+        "account_detail_1": "储蓄卡",
+        "account_detail_2": "现金"
+      },
+      {
+        "id": 9,
+        "time_span_four": "1794085091018",
+        "account_type": "income",
+        "date": "2026-11-07 20:57",
+        "time_span": "1794085091018",
+        "member": "FixtureMember",
+        "account_detail_1": "储蓄卡",
+        "account_detail_2": ""
+      },
+      {
+        "id": 11,
+        "time_span_four": "1794086524002",
+        "account_type": "expenses",
+        "date": "2026-11-01 21:08",
+        "time_span": "1794086524002",
+        "member": "FixtureMember",
+        "account_detail_1": "储蓄卡",
+        "account_detail_2": ""
+      },
+      {
+        "id": 12,
+        "time_span_four": "1794087065371",
+        "account_type": "borrow",
+        "date": "2026-11-07 21:26",
+        "time_span": "1794087065371",
+        "member": "FixtureLender",
+        "account_detail_1": "现金",
+        "account_detail_2": ""
+      }
+    ]
+  }
+}
