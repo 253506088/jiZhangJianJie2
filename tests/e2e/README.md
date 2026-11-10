@@ -1,5 +1,9 @@
 # 浏览器端到端验证
 
+第二轮新增 `year-overview.spec.ts`（全年边界）、`editor-search-calculator.spec.ts`（跨父类搜索与四则运算）、`home-background.spec.ts`（静态/动图、多帧、重启和失败保护）、`reconciliation.spec.ts`（年度逐笔结果、错额、脱敏和只读）。新增样本仍只包含虚构内容；原包导出和内存合成的年度范围分别标注。
+
+`legacy-db.spec.ts` 使用从原样虚构DB提取的精确结构/行数据重建SQLite，验证本机工作器、独立初始化、续记、重复/取消/坏库及夜间界面。原样DB和原版实际全年Excel的Android系统选择闭环另见 `scripts/native/verify-db-migration.mjs` 与 `docs/ACCEPTANCE-1.1.0.md`。
+
 所有测试使用 Playwright 创建的新临时浏览器 context，不连接用户现有 Edge/Chrome profile。日期固定为 2026-11-08（Asia/Shanghai），视口为 390 × 844。
 
 Excel 文件由 `helpers.ts` 使用 SheetJS 在内存中生成；只包含标记为虚构的数据，没有读取用户文件。这里验证 `.xls/.xlsx` 解析与已配置字段的端到端行为，不能把合成文件当作原 APK 实际生成的导出样本。旧版格式取证仍由 M02 单独完成。

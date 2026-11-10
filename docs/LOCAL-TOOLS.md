@@ -47,6 +47,8 @@
 
 ## 前端与安卓构建（原环境）
 
+2026-11-10第二轮优化结束后，旧ARM/JDB、5039/9295，以及专用MuMu1、5052/9239均已停止并核对。新增虚构证据保留在 `analysis/legacy-lab/db`、`.tools/db-native`、`.tools/enhancement-native` 和 `.tools/release-1.1.0`；原APK、镜像、签名及用户原实例0保留。没有删除工具磁盘或修改全局开发环境。
+
 - Node.js 使用原有 24.13.0，不切换 nvm，也不依赖 REA 自带的 24.22.2。
 - npm 已设置项目级 `.npmrc`，今后本项目包缓存写入 `.tools/npm-cache`（D盘）；不会清空系统共享 npm 缓存。
 - 浏览器自动化的临时 profile、下载缓存和跟踪结果在 `.tools/test-tmp`、`.tools/e2e-results`（D盘），不使用用户浏览器 profile。

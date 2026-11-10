@@ -61,14 +61,14 @@ async function addLoan(
   await expect(active(page).locator('.lj-dashboard-home')).toBeVisible();
 }
 
-test('新安装默认概况蓝色，日周月钻取有效，经典布局与主题偏好可持久切换', async ({
+test('新安装默认概况蓝色，日周年钻取有效，经典布局与主题偏好可持久切换', async ({
   page,
 }, testInfo) => {
   await expect(page.locator('.ledger-app')).toHaveAttribute('data-home-layout', 'overview');
   await expect(page.locator('.ledger-app')).toHaveAttribute('data-accent', 'blue');
   await expect(active(page).getByRole('heading', { name: '预算余额', exact: true })).toBeVisible();
   await expect(active(page).getByRole('heading', { name: '收支概况', exact: true })).toBeVisible();
-  await expect(active(page).locator('.lj-period-cards > button')).toHaveCount(3);
+  await expect(active(page).locator('.lj-period-cards > button')).toHaveCount(4);
   await expect(
     active(page).getByRole('button', { name: '查看今天明细', exact: true }),
   ).toContainText('暂未记账');
@@ -81,6 +81,10 @@ test('新安装默认概况蓝色，日周月钻取有效，经典布局与主�
   await active(page).getByRole('button', { name: '查看本周明细', exact: true }).click();
   await expect(active(page).locator('.lj-filter-chip')).toContainText('2026-11-02');
   await expect(active(page).locator('.lj-filter-chip')).toContainText('2026-11-08');
+  await backHome(page);
+  await active(page).getByRole('button', { name: '查看本年明细', exact: true }).click();
+  await expect(active(page).locator('.lj-filter-chip')).toContainText('2026-01-01');
+  await expect(active(page).locator('.lj-filter-chip')).toContainText('2026-12-31');
   await openData(page);
   await active(page)
     .getByRole('button', { name: /^经典首页/ })
@@ -213,7 +217,7 @@ test('收入保持单层类别，成员默认为自己且可新建筛选改名�
   await expect(
     active(page).getByLabel('成员', { exact: true }).locator('option:checked'),
   ).toHaveText('虚构家人');
-  await active(page).getByLabel('成员', { exact: true }).selectOption({label:'自己'});
+  await active(page).getByLabel('成员', { exact: true }).selectOption({ label: '自己' });
   await active(page).getByLabel('金额', { exact: true }).fill('30');
   await active(page).getByLabel('备注', { exact: true }).fill('虚构自己的工资');
   await active(page).getByRole('button', { name: '保存', exact: true }).click();

@@ -307,7 +307,9 @@ describe('Excel容量与精确标题合计', () => {
     expect(workbook.Sheets['支出']['A65536'].v).toBe('999999999.99');
     expect(workbook.Sheets['支出']['G65536'].v).toBe('仅测试');
     expect(built.summary.count).toBe(XLS_MAX_DATA_ROWS);
-  }, 20_000);
+    // This is a full BIFF capacity round trip, not a latency contract. Leave room for
+    // shared CI/emulator load while retaining all row-count and last-row assertions.
+  }, 60_000);
 
   it('XLS超过65533条时明确拒绝而非截断，XLSX仍保留全部合法明细', () => {
     const state = largeState(XLS_MAX_DATA_ROWS + 1);
