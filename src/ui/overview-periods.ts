@@ -1,7 +1,7 @@
 import { localDate, periodRange } from '../core';
 
 export interface OverviewPeriod {
-  key: 'day' | 'week' | 'month';
+  key: 'day' | 'week' | 'month' | 'year';
   label: string;
   fromDate: string;
   toDate: string;
@@ -21,6 +21,12 @@ export function overviewPeriods(now = new Date(), weekStartsOn: 0 | 1 = 1): Over
       key: 'month',
       label: '本月',
       ...periodRange(today, 'month', weekStartsOn),
+    },
+    {
+      key: 'year',
+      label: '本年',
+      fromDate: `${today.slice(0, 4)}-01-01`,
+      toDate: `${today.slice(0, 4)}-12-31`,
     },
   ];
 }

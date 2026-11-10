@@ -26,7 +26,7 @@ export function OverviewHome({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const book = state.books.find((item) => item.id === bookId)!;
-  const periods = overviewPeriods();
+  const periods = overviewPeriods(new Date(), state.settings.weekStartsOn ?? 1);
   const month = localDate().slice(0, 7);
   const rows = filterTransactions(state, { bookId, month });
   const monthTotals = transactionTotals(rows);
