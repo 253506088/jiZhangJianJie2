@@ -1,0 +1,101 @@
+.lj-home-background {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.lj-dashboard-hero.has-background {
+  overflow: hidden;
+  border-radius: 20px;
+  width: calc(100% - 32px);
+  margin-top: 8px;
+  background: var(--lj-quiet);
+}
+.lj-dashboard-hero.has-background .lj-dashboard-art {
+  visibility: hidden;
+}
+.lj-dashboard-hero.has-background .lj-dashboard-hero-copy {
+  background: var(--lj-surface);
+  border: 1px solid var(--lj-line);
+  padding: 16px 22px;
+  border-radius: 24px;
+  box-shadow: 0 2px 18px #0002;
+}
+.lj-overview.has-background {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.lj-overview.has-background > .lj-home-background {
+  z-index: -2;
+}
+.lj-overview.has-background::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--lj-surface);
+  opacity: 0.88;
+  z-index: -1;
+}
+.lj-background-settings {
+  padding-bottom: 18px;
+}
+.lj-background-preview {
+  height: 180px;
+  position: relative;
+  overflow: hidden;
+  background: var(--lj-quiet);
+  border-radius: 14px;
+  margin: 12px 0;
+}
+.lj-background-preview > span {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  border-radius: 8px;
+  padding: 5px 9px;
+  color: #fff;
+  background: #0009;
+  font-size: 12px;
+}
+.lj-background-file {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+  padding: 12px 0;
+}
+.lj-background-file input {
+  width: 100%;
+  max-width: 100%;
+  color: var(--lj-text);
+  font-size: 13px;
+}
+.lj-background-fit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 14px;
+}
+.lj-background-fit select {
+  max-width: 70%;
+  padding: 10px;
+  border: 1px solid var(--lj-line);
+  background: var(--lj-surface);
+  color: var(--lj-text);
+  border-radius: 8px;
+}
+.lj-background-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+.lj-background-actions > button {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--lj-line);
+}

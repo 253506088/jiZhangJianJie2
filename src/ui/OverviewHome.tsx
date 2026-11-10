@@ -11,6 +11,7 @@ import type { PageProps, Route } from './contracts';
 import { Icon } from './Icon';
 import { Modal } from './shared';
 import { overviewPeriods } from './overview-periods';
+import { HomeBackground } from './HomeBackground';
 
 export function OverviewHome({
   state,
@@ -80,7 +81,10 @@ export function OverviewHome({
             <Icon name="search" size={23} />
           </button>
         </header>
-        <div className="lj-dashboard-hero">
+        <div
+          className={`lj-dashboard-hero${state.settings.homeBackground ? ' has-background' : ''}`}
+        >
+          <HomeBackground value={state.settings.homeBackground} />
           <svg viewBox="0 0 360 204" className="lj-dashboard-art" aria-hidden="true">
             <circle cx="180" cy="98" r="70" className="lj-art-outline" />
             <path

@@ -20,6 +20,7 @@ import type { PageProps, Route } from './contracts';
 import { BudgetForm } from './forms';
 import { Icon } from './Icon';
 import { ConfirmModal, EmptyState, Modal, MonthPicker, PageHeader } from './shared';
+import { HomeBackgroundSettings } from './HomeBackground';
 
 export function DataSettings({
   state,
@@ -194,7 +195,7 @@ export function DataSettings({
                 {
                   value: 'overview',
                   label: '概况首页',
-                  text: '预算卡片、日周月收支',
+                  text: '预算卡片、日周月年收支',
                   icon: 'list',
                 },
                 {
@@ -223,6 +224,7 @@ export function DataSettings({
               </button>
             ))}
           </div>
+          <HomeBackgroundSettings state={state} busy={busy} commit={commit} />
           <h3 className="lj-palette-heading">主题配色</h3>
           <div className="lj-color-picker" aria-label="主题配色">
             {(

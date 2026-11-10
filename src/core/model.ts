@@ -1,4 +1,5 @@
 import { budgetScopeKey } from './budget-periods';
+import { validHomeBackground, type HomeBackground } from './home-background';
 
 /** The versioned, portable ledger model. No device or UI dependencies belong here. */
 export const SCHEMA_VERSION = 2 as const;
@@ -197,6 +198,7 @@ export interface LedgerState {
     homeLayout: HomeLayout;
     accentColor: AccentColor;
     weekStartsOn?: 0 | 1;
+    homeBackground?: HomeBackground | null;
   };
 }
 
@@ -439,6 +441,11 @@ export function validateState(value: unknown): asserts value is LedgerState {
     requireValue(
       value.settings.weekStartsOn === 0 || value.settings.weekStartsOn === 1,
       '周起始日设置不正确',
+    );
+  if (value.settings.homeBackground !== undefined && value.settings.homeBackground !== null)
+    requireValue(
+      validHomeBackground(value.settings.homeBackground),
+      '首页背景格式不正确或超过 8 MiB',
     );
 
   const accountNames = new Set<string>();

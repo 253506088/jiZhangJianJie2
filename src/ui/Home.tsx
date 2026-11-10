@@ -9,6 +9,7 @@ import {
 import type { PageProps, Route } from './contracts';
 import { Icon } from './Icon';
 import { EmptyState, MonthPicker, TransactionRows } from './shared';
+import { HomeBackground } from './HomeBackground';
 
 export function Home({
   state,
@@ -63,7 +64,11 @@ export function Home({
             <Icon name="settings" />
           </button>
         </header>
-        <section className="lj-overview" aria-label="本月收支">
+        <section
+          className={`lj-overview${state.settings.homeBackground ? ' has-background' : ''}`}
+          aria-label="本月收支"
+        >
+          <HomeBackground value={state.settings.homeBackground} />
           <MonthPicker value={month} onChange={onMonth} />
           <div className="lj-balance-layout">
             <div className="lj-spending-ring">
